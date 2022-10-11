@@ -1,0 +1,2121 @@
+ 
+Kubernetes Architecture and components
+Am sure you will love this article . This article explains a very good overview of kubernetes architecture .the contents starts from explaining differences between IMAGE and CONTAINER
+What is Kubernetes?
+Defination:
+kubernetes also known as K8s, is an open-source system for automating deployment, scaling, and management of containerized applications.
+if we look at Definition we can see word CONTAINER.
+Lets understand the difference between IMAGE and CONTAINER
+Image definition:
+> “Image is a package with dependencies and configurations.
+> It is an artifact which can be moved around.
+> if its not running its an image.
+1.	POD definition:
+> Pod is basically abstraction layer on top of container.
+> Each pod has its own IP address its an internal IP.
+> a pod can communicate to another pod using their ip .
+> pods are ephemeral means if a container or app crashes the pod will die a new pod will be created with new ip address.
+2. Container definition:
+> “ In simple words a container is a running environment for an image.
+> “when we pull an image on local machine and starts it, the Application inside the container will starts and its creates a container environment .
+> “if its running it is a container.
+ 
+Figure Kubernetes Architecture.
+Kubernetes architecture composed of worker node and master node
+Master process in Kubernetes:
+ 
+•	The Kubernetes master is defined as the Kubernetes master node is the node in which that can direct and arrange a set of worker node.
+•	There are 4 processes that run on master node. they control worker node and kubernetes cluster as well.
+1.	Apiserver
+2.	scheduler
+3.	controller
+4.	etcd
+Apiserver:
+•	the first process in master node is apiserver.
+•	It acts as an entry point in kubernetes cluster.
+•	As a user when you deploy application in kubernetes cluster we interact with the Apiserver through a client or kubelet.
+•	Apiserver is a cluster gateway which gets intial requests or updates into the cluster.
+Example:
+you if want to deploy new pods or application or components or if you need to check cluster health or deployment status we need to talk to the apiserver.
+2. Scheduler
+•	the process that schedules the pod on nodes is scheduler.
+•	It just decides on which node a new pod to be scheduled.
+•	once the apiserver validates the request to have a new pod , it handles it to a scheduler , inorder to start the pod on one of the worker nodes.
+•	Kublet gets the request from scheduler and schedules the pod on node.
+3. Controller Manager
+•	Controller manager detects the state of cluster.
+•	what happens if pod dies on any node we need to reschedule those pods as soon as possible to perform this activity it interacts with scheduler.
+4. Etcd
+•	Etcd stores a critical data for Kubernetes.
+•	By distributed process , it also maintains a copy of data stores across all clusters on distributed machines/servers.
+•	it stores the cluster state in key/value pair.
+•	Etcd is cluster brain
+•	if a pod dies, a new pod joins all these values are stored in etcd.
+Worker node :
+•	Its a physical server or virtual server .
+The worker nodes are the part of the Kubernetes clusters which actually execute the containers and applications on them.
+•	Each node has multiple pods and containers running on it
+•	3 processes must be installed on each every node .
+•	these 3 processes are responsible for scheduling and managing these pods.
+•	nodes are the actual cluster server that do the actual work that's why they are called “worker nodes”
+ 
+worker node processes:
+worker node have 3 processes they are:
+1.	Container runtime
+2.	kubelet
+3.	kubeproxy
+4.	Container runtime
+•	“Its the first process that runs on each every node is container runtime.
+•	container runtimeis a process to execute containers.
+2. kubelet
+•	the process that schedules the pod under container is called kubelet
+•	kubelet interacts with container and nodes.
+•	kubelet starts the pod with a container inside it
+3. Service
+The way communication happens between pod and application is through service object .
+ 
+Figure service object
+•	Service object has static IP address with DNS name that will be attached to pod.
+•	service object catches the request and forward it to the pod .
+•	even if pod dies the service and its IP address will present.
+•	here the service object is load balancer
+we have 2 types of services.
+•	External service
+•	internal service
+external service
+if the application needs to be accessed through bowser we need external service.
+Example:
+•	external service opens the communication from external sources.
+•	the URl of external service looks like exmaple :https://165:54:39:88:8080
+•	This URL is good for testing Environments.
+•	here 165:54:39:88 is ip of node and 8080 is port number of application.
+Ingress:
+if we need to access the application by end users it should be in form of
+https://facebook.com as example here https is secure protocal fallowed by domain name “facebook”. for this we have a component in kubernetes called as “INGRESS”.the request first goes to ingress and then the request will be forwarded to service.
+External service:
+•	if we need to open the database for public requests we need to create a service called external service.
+ConfigMap:
+•	It is an external configuration for an application.
+•	configmap contains configurations of application.
+•	configmap contains URL of databases .we just connect it to a pod .pod gets the data that is present in configmap.
+•	if we change the name of service or change in end point we will just adjust the configmap.
+•	pod of the external configuration can also be database what if the username and password changes in the application deployment process .
+•	Having username and password in config map is insecure although its an external service.
+•	to handle this we have a component called “SECRETS”
+secrets:
+•	It stores the secret data like credentials and certificates in base64 encoded format however this is not secure .for this we use third party services in kuberenetes to handle secrets.
+•	we just connect secret to pod so that pod can get the information from secret.
+•	we can use data of config map and sectets into our application pod using environment variables or as properties life.
+Volumes :
+•	what happens to the data when we restart a pod ?.the data or log inside the pod will gone. if we need persist the data for a long term we use volumes.
+•	kuberenetes does not manage data persistent.the k8 admin is responsible for replicating and avilability of data.
+•	volumes are physical store attached to hard drive of the server node or local machine where pod is running.it can be remote storage outside of the Kubernetes cluster like cloud storage .
+•	we can consider storage as external hard drive that can plugged into a Kubernetes cluster.
+Deployment object :
+ 
+Figure Deployment object
+•	In deployment we can specify number of replicas of pod we needed .
+•	we can scale up and down pods as needed
+•	in reality we work with deployments not pods ‘
+•	pod is a layer on top of container.
+•	deployment is abstraction on top of pod.
+•	if one of the replica of application pod dies service will forward the request to the another one and application can still be accessed by the end users.
+•	this is true in case of application pod.
+•	how about the case of database pod dies ??
+•	in this case we cant access the application.
+•	database cant be replicated by deployment object why ?
+•	this is because database has state .meaning that if we have cloned replicas of data base that would all need to share data storage .
+•	here we need some process that manage which pods are reading from the storage and writing to the storage to avoid data inconsiustency . this mechanism is handled throough statefulset.
+statefulset:
+•	They are for stateful applications and databases like mysql.
+•	Any database app must be created with statefulsets not with Deployment object.
+•	stateful set just like deployment object they are responsible for scaling and replicating pods and handling database consistency.
+•	Generally databases are hosted outside of the kuberenetes cluster.
+Daemon set:
+•	when we add or delete nodes we need to adjust replica count , with deployment we cant ensure that pods are equally distributed.
+•	but with Daemon set it automatically calculates number of replica's needed based on number of nodes.
+•	Daemon set just deploys 1 replica or 1 pod per node.
+•	when we add a node to cluster Daemon set adds a pod replica .
+•	we no need to define replica count .
+Conclusion:
+In this article we have demonstrated the kubernetes architecture and components in detail
+
+Sidecar Containers and Init Containers in Kubernetes
+Init containers run before applications containers run in a pod, by default it supports many features of application containers and sidecar containers run alongside application containers in a pod. You can define any number of sidecar containers to run alongside the main container.
+What is Sidecar Container?
+A sidecar is just a container that runs on the same Pod as the application container. It shares the same volume and network as the main container, it can “help” or enhance how the application operates. A Sidecar container is a second container to add the pod when it requires to use the any resources that use by the main container.
+ 
+Let’s say we have requirement to collect the log from existing container in pod, as we cannot stop/breaking existing setup. In this case sidecar helps more here. In this example assume, we have a webserver container running Nginx image. The logs produced by the main container are not enough to be placed on a persistent volume. However, developers need access to the last 24 hours of logs so they can trace issues and bugs. Therefore, we need to ship the access and error logs for the webserver to a log-aggregation service(s).
+Following the separation of concerns principle, we implement the Sidecar pattern by deploying a second container that ships the Nginx error and access logs. Since containers are running on the same Pod, we can use a shared empty Dir volume to read and write logs.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: sidecar
+spec:
+  volumes:
+    - name: shared-logs
+      emptyDir: {}
+
+  containers:
+    - name: nginx
+      image: nginx
+      volumeMounts:
+        - name: shared-logs
+          mountPath: /var/log/nginx
+
+    - name: sidecar-container
+      image: nginx
+      command: ["bin/bash","-c","while true; do cat /var/log/nginx/access.log /var/log/nginx/error.log; sleep 30; done"]
+      volumeMounts:
+        - name: shared-logs
+          mountPath: /var/log/nginx
+The above definition is a standard Kubernetes Pod definition except that it deploys two containers to the same Pod. The sidecar container conventionally comes second in the definition so that when you issue the kubectl execute the command, you target the main container by default.
+The main container is a Nginx container that stores its logs on a volume mounted on /var/log/nginx. Mounting a volume at that location prevents Nginx from outputting its log data to the standard output and forces it to write them to access.log and error.log files.
+Use case of side-car container
+These are some of the scenarios where you can use this pattern
+•	To extend the functionality of the existing single container pod without touching the existing one.
+•	To enhance the functionality of the existing single container pod without touching the existing one.
+•	To synchronize the main container code with the git server, pull.
+•	For ship log events to the external server.
+•	Also, we can use sidecar for network-related tasks.
+Best Practices of side-car container
+It is crucial to follow sidecar best practices during implementation, both for security reasons and to maximize the sidecar’s efficiency and productivity. You’ll learn about some of those practices in this section.
+•	Make sure there is a reason for separating the containers.
+•	Strive to make them small, Modular Applications
+•	Aware of the resource limits, it should not break the main containers.
+What is Init Container?
+A pod can have Init Containers in addition to application containers. Init containers allow you to reorganize setup scripts and binding code.
+ 
+An init container is the one that starts and executes beforeother containers in the same Pod. It’s meant to perform initialization logic for the main application hosted on the Pod.
+Properties of Init container
+•	It contains utilities or setup scripts not present in an app image (making images light-weight)
+•	They always run to completion
+•	Init container executes sequentially and each of the init containers must succeed before the next can run.
+•	They support all the fields and features of app containers, including resource limits, volumes, and security settings.
+•	Init-containers do not support lifecycle, liveness probe, readiness probe, or startup probe because they must run to completion.
+Use cases of Init container
+•	Init containers can contain utilities or custom code for the setup that are not present in an app image.
+•	They can be given access to Secrets that app containers cannot access, like pulling the secrets from vault or other apps.
+•	Performing an automated restore from backup in case the data volume is empty (initial setup after a major outage) or contains corrupt data (automatically recover the last working version).
+•	Doing database schema updates and other data maintenance tasks that depend on the main application not running.
+•	Ensure that the application data is in a consistent and usable state, repairing it if necessary.
+•	Clone a Git repository into a Volume
+•	It can be used to wait for a service to start that is to be used by the main app
+•	An init container is a good candidate for delaying the application initialization until one or more dependencies are available.
+Create a pod with init-container
+apiVersion: v1
+kind: Pod
+metadata:
+  name: init-container
+  labels:
+    purpose: initContainers-demo
+spec:
+  initContainers:
+  - name: init-container
+    image: busybox
+    command: ["echo","Hello, I am init-conatiner"]
+  - name: init-busybox2
+    image: busybox
+    command: ["sleep","30"]
+
+  containers:
+  - name: main-container
+    image: busybox
+    command: ["echo","main container"]
+  restartPolicy: Never
+Output
+# kubectl apply -f init-container.yml
+pod/init-pod created
+
+Check Status of init-container
+# kubectl get pod init-container -o wide
+NAME             READY   STATUS      RESTARTS   AGE   IP            NODE       
+init-container   0/1     Completed   0          49s   x.x.x.x   
+
+# kubectl get po init-container
+NAME             READY   STATUS      RESTARTS   AGE
+init-container   0/1     Completed   0          10m12s
+
+
+
+
+
+
+
+
+Tweet on Twitter
+  
+ 
+Troubleshooting Kubernetes Networking: As we are seeing one by one issues on Kubernetes and how to fix it, part of that today we are going to see, another important topic, which is nothing but networking. As this is vest topic to cover, we will be separate one by one and provide the solutions. In this topic, we will be taking some example scenarios and how to fix it.
+In this series we should get understand the basics and few related topics, then will see very basic issue and how to fix in this, in coming post will be seeing another extended issue and how to fix it.
+Basics
+Services
+Before we proceed, let’s check about Kubernetes service, A Kubernetes service is a logical abstraction for a deployed group of pods in a cluster (which all perform the same function). Since pods are ephemeral, a service enables a group of pods, which provide specific functions (web services, image processing, etc.) to be assigned a name and unique IP address (clusterIP). As long as the service is running that IP address, it will not change. Services also define policies for their access.
+Types of Kubernetes services?
+•	ClusterIP. Exposes a service which is only accessible from within the cluster.
+•	NodePort. Exposes a service via a static port on each node’s IP.
+•	LoadBalancer. Exposes the service via the cloud provider’s load balancer.
+•	ExternalName. Maps a service to a predefined externalName field by returning a value for the CNAME record.
+Container Network Interface
+As we know, Every Pod in a cluster gets its own unique cluster-wide IP address. This means you do not need to explicitly create links between Pods and you almost never need to deal with mapping container ports to host ports. This creates a clean, backwards-compatible model where Pods can be treated much like VMs or physical hosts from the perspectives of port allocation, naming, service discovery, load balancing, application configuration, and migration.
+Kubernetes imposes the following fundamental requirements on any networking implementation (barring any intentional network segmentation policies): pods can communicate with all other pods on any other node without NAT agents on a node (e.g. system daemons, kubelet) can communicate with all pods on that node.
+Kubernetes networking addresses four concerns:
+•	Containers within a Pod use networking to communicate via loopback.
+•	Cluster networking provides communication between different Pods.
+•	The Service resource lets you expose an application running in Pods to be reachable from outside your cluster.
+•	You can also use Services to publish services only for consumption inside your cluster.
+CNI Plugins:
+Here are some familiar or most used CNI plugins,
+1.	Flannel
+2.	Calico
+3.	Cilium
+4.	WeaveNet
+5.	Canal
+Summary Matrix
+	Flannel	Calico	Cilium	Weavenet	Canal
+Mode of Deployment	DaemonSet	DaemonSet	DaemonSet	DaemonSet	DaemonSet
+Encapsulation and Routing	VxLAN	IPinIP,BGP,eBPF	VxLAN,eBPF	VxLAN	VxLAN
+Support for Network Policies	No	Yes	Yes	Yes	Yes
+Datastore used	Etcd	Etcd	Etcd	No	Etcd
+Encryption	Yes	Yes	Yes	Yes	No
+Ingress Support	No	Yes	Yes	Yes	Yes
+Enterprise Support	No	Yes	No	Yes	No
+How to choose a CNI Provider?
+There is no single CNI provider that meets all our project needs, here some details about each provider. For easy setup and configuration, Flannel and Weavenet provide great capabilities. Calico is better for performance since it uses an underlay network through BGP. Cilium utilizes a completely different application-layer filtering model through BPF and is more geared towards enterprise security.
+Basic Troubleshooting
+Traffic
+As we have seen, Kubernetes supports a variety of networking plugins as seen above and each fails in its own way. To troubleshoot the issues in networking we should understand the core. Kubernetes relies on the Netfilter kernel module to set up low level cluster IP load balancing. This requires two critical modules, IP forwarding and bridging.
+Kernel IP forwarding
+IP forwarding is a kernel setting that allows forwarding of the traffic coming from one interface to be routed to another interface. This setting is necessary for Linux kernel to route traffic from containers to the outside world.
+What it causes?
+Sometimes this setting could be reset by a security team running while security scans/enforcements or some system changes, or have not been configured to survive a reboot. When this happens networking starts failing.
+Pod to service connection times out:
+* connect to 10.0.21.231 port 3000 failed: Connection timed out
+* Failed to connect to 10.0.21.231 port 3000: Connection timed out
+* Closing connection 0
+curl: (7) Failed to connect to 10.0.21.231 port 3000: Connection timed out
+Tcpdump could show that lots of repeated SYN packets are sent, but no ACK is received.
+How to diagnose
+Check that ipv4 forwarding is enabled
+# sysctl net.ipv4.ip_forward
+0 means that forwarding is disabled
+net.ipv4.ip_forward = 0
+How to fix
+This will turn things back on a live server
+# sysctl -w net.ipv4.ip_forward=1
+on Centos/RHEL this will make the setting apply after reboot
+# echo net.ipv4.ip_forward=1 >> /etc/sysconf.d/10-ipv4-forwarding-on.conf
+Bridge-netfilter
+The bridge-netfilter setting enables iptables rules to work on Linux bridges just like the ones set up by Docker and Kubernetes. This setting is necessary for the Linux kernel to be able to perform address translation in packets going to and from hosted containers.
+What it causes?
+Network requests to services outside the Pod network will start timing out with destination host unreachable or connection refused errors.
+How to diagnose
+Check that bridge netfilter is enabled
+sysctl net.bridge.bridge-nf-call-iptables
+0 means that bridging is disabled
+net.bridge.bridge-nf-call-iptables = 0
+How to fix
+Note some distributions may have this compiled with kernel, check with
+# cat /lib/modules/$(uname -r)/modules.builtin | grep netfilter
+# modprobe br_netfilter
+Turn the iptables setting on
+# sysctl -w net.bridge.bridge-nf-call-iptables=1
+# echo net.bridge.bridge-nf-call-iptables=1 >> /etc/sysconf.d/10-bridge-nf-call-iptables.conf
+Firewall rules block overlay network traffic
+Kubernetes provides a variety of networking plugins that enable its clustering features while providing backwards compatible support for traditional IP and port based applications.
+One of most common on-premises Kubernetes networking setups leverages a VxLAN overlay network, where IP packets are encapsulated in UDP and sent over port 8472.
+What it causes?
+There is 100% packet loss between pod IPs either with lost packets or destination host unreachable.
+$ ping 10.22.192.108
+PING 10.22.192.108 (10.22.192.108): 56 data bytes
+--- 10.22.192.108 ping statistics ---
+5 packets transmitted, 0 packets received, 100% packet loss
+How to diagnose
+It is better to use the same protocol to transfer the data, as firewall rules can be protocol specific, e.g. could be blocking UDP traffic.
+iperf could be a good tool for that:
+on the server side
+# iperf -s -p 5432 -u
+on the client side
+# iperf -c 10.22.192.108 -u -p 5432 -b 1K
+How to fix
+Update the firewall rule to stop blocking the traffic. Here is some common iptables advice.
+Pod CIDR conflicts
+Kubernetes sets up special overlay network for container-to-container communication. With isolated pod network, containers can get unique IPs and avoid port conflicts on a cluster. The problems arise when Pod network subnets start conflicting with host networks.
+What it causes?
+Pod to pod communication is disrupted with routing problems.
+# curl http://172.24.28.32:3000
+curl: (7) Failed to connect to 172.24.28.32 port 3000: No route to host
+How to diagnose
+Start with a quick look at the allocated pod IP addresses:
+# kubectl get pods -o wide
+Compare host IP range with the kubernetes subnets specified in the apiserver:
+# ip addr list
+IP address range could be specified in your CNI plugin or kubenet pod-cidr parameter.
+How to fix
+Double-check what RFC1918 private network subnets are in use in your network, VLAN or VPC and make certain that there is no overlap.
+Once you detect the overlap, update the Pod CIDR to use a range that avoids the conflict.
+
+Kubernetes CrashLoopBackOff – How to Troubleshoot
+We have seen about imagepullbackoff error on last article, now let’s take a look on another familiar error on Kubernetes. If you are working on Kubernetes, this could be on the annoying error, you may experience multiple times. The error is nothing but Kubernetes CrashLoopBackOff, it is one of the common errors in Kubernetes, indicating a pod constantly crashing in an endless loop and either unable to get start or fail.
+In this post will see how we can identify the cause of the issue and why we are getting CrashLoopBackOff error, and also, we will cover how you can solve this.
+Why does CrashLoopBackOff occurs?
+The CrashLoopBackOff error can occur due to varies reasons, including:
+•	Insufficient resources—lack of resources prevents the container from loading
+•	Locked file/database/port—a resource already locked by another container
+•	No proper reference/Configuration—reference to scripts or binaries that are not present on the container or any misconfiguration on underlying system such as read-only filesystem
+•	Config loading/Setup error—a server cannot load the configuration file or initial setup like init-container failing
+•	Connection issues—DNS or kube-DNS is not able to connect to a external services
+•	Downstream service – One of the downstream services on which the application relies can’t be reached or the connection fails (database, backend, etc.)
+•	Liveness probes– Liveness probes could have misconfigured or probe fails due to any reason.
+•	Port already in use: Two or more containers are using the same port, which doesn’t work if they’re from the same Pod
+How to Diagnosis CrashLoopBackOff
+To troubleshoot any issues, the best way to identify the root cause is to start going through the list of potential causes and check one by one. Let’s say easy on first. Also, another basic requirement is having better understanding of the environment, like what is the configuration, what port it used, is there any mount point, what is the probe configured, etc.
+Back Off Restarting Failed Container
+For first point to troubleshoot to collect the issue details run kubectl describe pod [name]. Let say you have configured and it is failing due to some reason like Liveness probe failed and Back-off restarting failed container.
+If you get the back-off restarting failed container message this means that you are dealing with a temporary resource overload, as a result of an activity spike. The solution is to adjust periodSeconds or timeoutSeconds to give the application a longer window of time to respond.
+Check the logs
+If the previous step not providing any details or cannot identify, the next step will be pulling more details explanation about what is happening, you can get this from failing pod.
+For that run kubectl get pods to identify the pod that was exhibiting the CrashLoopBackOff error. You can run the following command to get the log of the pod:
+kubectl logs PODNAME
+Try to walkthrough the error, to identify why the pod is repeatedly crashing. This may have some more details from the application running inside the pod, with this you could see any configuration error or any readiness issue like that.
+Check Deployment Logs
+Run the following command to retrieve the kubectl deployment logs:
+kubectl logs -f deploy/ -n
+This may also provide clues about issues at the application level. For example, below you can see a log file that shows ./datacan’t be mounted, likely because it’s already in use and locked by a different container.
+Resource limit
+you may be experiencing CrashLoopBackOff errors due to insufficient memory resources. You can increase the memory limit by changing the “resources:limits” in the Container’s resource manifest.
+Issue with image
+If still there is a issue, another reason could be the docker image you are using may not working properly, you need to make sure when you run separately it is working fine. If that is working and failing with Kubernetes, you may need to go advance way to find what is happening, try following,
+Step 1: Identify entrypoint and cmd
+You will need to identify the entrypoint and cmd to gain access to the container for debugging. Do the following:
+1.	Run docker pull [image-id] to pull the image.
+2.	Run docker inspect [image-id] and locate the entrypoint and cmd for the container image.
+Step 2: Change entrypoint
+Because the container has crashed and cannot start, you’ll need to temporarily change the entrypoint in the container specification to tail -f /dev/null.
+Spec:
+     containers:
+      -   command:
+           - “tail”
+           - “-f”
+           - “/dev/null”
+Step 3: Check for the cause
+With the entrypoint changed, you should be able to use the default command line kubectl to execute into the issue container. Once you login the container, check all the possible options and validate all good, if you see any issue fix it.
+Step 4: Check for missing packages or dependencies
+When you logged in, check if any packages or dependencies are missing, preventing the application from starting. If there are packages or dependencies missing, provide the missing files to the application and see if this resolves the error.
+Step 5: Check application configuration
+Inspect your environment variables and verify if they’re correct.
+If that isn’t the problem, then perhaps your configuration files are missing/reference is not correct, could cause the application to fail. You can download/refer the correct path to missing files or
+If there are any configuration changes required, like the username and password of the database configuration file, those could resolve that.
+If the issue was not with missing files or configuration, you’ll need to look for some of the less generic reasons for the issue. Below are a few examples of what these may look like.
+Other reasons?
+Issue with External Services (DNS Error)
+Sometimes, the CrashLoopBackOff error is caused by an issue with one of the third-party services. Check the syslog and other container logs to see if this was caused by any of the issues we mentioned as causes of CrashLoopBackoff (e.g., locked or missing files). If not, then the problem could be with one of the third-party services.
+To verify this, you’ll need to use a debugging container. A debug container works as a shell that can be used to login into the failing container. This works because both containers share a similar environment, so their behaviours are the same. Here is a link to one such shell you can use: ubuntu-network-troubleshooting.
+Using the shell, log into your failing container and begin debugging as you normally would. Start with checking kube-dns configurations, since a lot of third-party issues, start with incorrect DNS settings.
+Container Failure due to Port Conflict
+Let’s take another example in which the container failed due to a port conflict. To identify the issue, you can pull the failed container by running docker logs [container id].
+Doing this will let you identify the conflicting service. Using netstat -tupln, look for the corresponding container for that service and kill it with the kill command. Delete the kube-controller-manager pod and restart.
+How to Prevent the CrashLoopBackOff Error
+We cannot always fix the issue, as it may happen one another reason, but what we can best is implementing some important steps to prevent the issue or having some kind of run book to make sure we are good at what we are doing.
+1. Check your configuration and variables
+As configurations are very critical for any application, if there is any issue that could cause the application to fail. So always make sure the configuration files are placed correctly and have proper reference in the manifests. Also, the contents are proper and it has correct values in-place and required configuration. Also if there is any environment values, make sure those are referred correctly and correct updated values. For this you can use configuration tools to manage these or keep all in single point of source, so we can avoid this kind of issues.
+2. Dependency or external service
+If an application uses a external services and calls made to a service fail, then the service itself is the problem. Most of the errors are usually could due to an error with the SSL certificate or network issues, so make sure those are functioning correctly. You can log into the container and manually reach the endpoints using curl to check and check kube-DNS working properly, if there is any issue, even those dependency service couldn’t reach, if it is fails to resolve.
+3. Check File(system)
+As mentioned before, file locks are a common reason for the CrashLoopBackOff error. So, check your volume configured properly or claims are having required permission. For example, if your application expects to read and write, make sure the permission granted or configured.
+Hope this is useful, with this you should able to identify the most of the possible cause. There could be beyond that, may related to your environment
+Missing required field “selector” in Kubernetes -Troubleshooting
+
+If you are using latest version of Kubernetes and your manifests were created before Kubernetes version 1.16, then you may face the error missing required field “selector”. This should happen mostly on a Kubernetes Deployment, Daemonset or other resources if you are moving from an old version to a newer version.
+The fix for issue, you need to add the spec.selector field to your YAML if it is not present or if it’s empty then provide a proper value.
+Let’s take an example to understand this. Below we have an old YAML file, which used to work fine in Kubernetes older version as back then, a default value was automatically set for the spec.selector field but not anymore. The spec.Selector no longer defaults to .spec.template.metadata.labels and will need to be explicitly set.
+kind: Deployment
+metadata:
+  name: web-server
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        name: web-server
+        tier: backend
+…
+…
+As you can see we are not used the spec.selector field in the above YAML file, we are also using the extension/v1beta1 version which is no longer used in latest version of Kubernetes (will create separate post to how to fix that).
+Let’s focus on the spec.selector field. The above YAML file creates a Kubernetes deployment. You may get this issue with Kubernetes Deployment, but the solution is simple.
+We will change the above YAML to:
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-server
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      name: web-server
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        name: web-server
+        tier: backend
+...
+...
+Notice the following section added to the spec field in above YAML:
+  selector:
+    matchLabels:
+      name: web-server
+That is what is required to solve this issue. The matchLabels field should have the key-value pair that we specify in the template field. You can have labels as component: serviceName or maybe k8s-app: serviceName, then that should be provided in the matchLabels field in spec.selector field.
+The selector field defines how the Daemonset or Deployment finds which Pods to manage. In the above YAML code, we just used a label that is defined in the Pod template (name: web-server). But more sophisticated selection rules are possible, as long as the Pod template itself satisfies the rule.
+Please be noted, As Kubernetes is still undergoing changes, we may see similar issues here and there. We should keep track the changes and should modify the fields as per that Kubernetes version we are using. Another recommendation is we should keep upgrade the Kubernetes at earliest, to align with then security compliance and also changes like this will be fixed asap. Otherwise, we may need to work lot and should perform multiple changes at times.
+Keep follow us, we are preparing series of Kubernetes troubleshooting guides, we will keep post regularly to help all.
+
+•	K8s Troubleshooting
+Kubernetes Resource Requests and Limits
+By motoskia -
+ 
+July 25, 2022
+0
+273
+
+Share on Facebook
+ 
+Tweet on Twitter
+  
+ 
+We have seen recently about evicted state, one of the key reason for it, resource. In this post will see about the Resource limit and requests configuration in Kubernetes is the most neglected configuration. But if you want to manage your Kubernetes cluster in production or high load environment, you must spend time in understanding and observing the memory and CPU requirements of your applications running inside containers in different pods. This always a basic expectation of troubleshooting.
+Before we see about resource limit on pods, we should understand about the Kubernetes nodes in a Kubernetes cluster, nodes contain fixed number of CPU core, a fixed amount of memory, some OS installed (mostly Linux), Kernel version, architecture, etc. Pods are nothing but as like application running on the host/node it will be running on the node.  
+Understanding Kubernetes Cluster
+Also, we should understand few more on Kubernetes here high-level pictorial explanation for your reference.
+ 
+Here we taken example of 3 nodes in this cluster nothing but 3 virtual machines. All the nodes are on a same network but will have different IP addresses. When we deploy new pod inside a namespace in Kubernetes, Kubernetes scheduler, deploys the pods/app to the node based on the resource availabilities. If there are multiple replicas, it distributed equally or based on resource availability, it deploys.
+For example, if App1 represents an application, then it is running inside a container, which is inside a pod. And a Pod may have multiple containers running inside for some cases. Please be noted “it is recommended that each pod runs a single container”.
+ 
+Hope this helped to visualize the node and pods in Kubernetes, now let’s see how we can manage resource allocation like CPU and memory for application and services running in Kubernetes pods.
+Requests and Limits
+Request and Limit are helps Kubernetes to manage the CPU and memory resource of the Pods. There are few other resources are there, still these two are the main resource to maintain the pods.
+Requests is used to specify the amount of resource that should be allocated to any pod for utilization, which means the pod is assigned this much resource when it starts. Whereas the Limit is used to specify the maximum amount of resource available for the pod, it makes sure a pod never goes above a certain value.
+When you create a Pod, the Kubernetes scheduler selects a node for the Pod to run on. Each node has a maximum capacity for each of the resource types: the amount of CPU and memory it can provide for Pods. The scheduler ensures that, for each resource type, the sum of the resource requests of the scheduled containers is less than the capacity of the node. Note that although actual memory or CPU resource usage on nodes is very low, the scheduler still refuses to place a Pod on a node if the capacity check fails. This protects against a resource shortage on a node when resource usage later increases, for example, during a daily peak in request rate. In case there is no requirement met the pod will be on pending state.
+If you have automatic scaling enabled in the Kubernetes cluster then a new node is added to the cluster in case of lack of resource. In case if you are not defining any limits on the manifest, Kubernetes considers that, all the resource available on the node can be use. Please note this may differ for some scenarios. In case, if there is lack of resources, it can lead to your pods getting evicted frequently due to insufficient memory or CPU. You can use the kubectl describe command to find the reason for an Evicted pod in your Kubernetes cluster. Here is the command:
+kubectl describe pod POD_NAME -n NAMESPACE_NAME
+In the output if you see something like this then it is a resource issue.
+CPU Resource
+CPU resource refers to the number of CPU core required by the pod to start or to run smoothly. This is measured in CPU units which is generally millicore or millicpu in most cloud platforms. So, if you mention 2 as the value that means that your container requires 2 CPU cores to start. The value 2 is equivalent to 2000m in terms of millicore or millicpu.
+We can specify value in fraction too, like 0.5 which means half CPU core is required, or 250m which means 1/4th CPU core is required.
+One important point to note here is that if you set a value larger than the core count of your biggest node, your pod will never be scheduled, it will always stay in Pending state. For example, if you have a pod that needs 4 cores, but your Kubernetes cluster has only 2 core VMs – in that time your pod will never be scheduled!
+Below we have shown the part of YAML which specifies the CPU limit and requests values:
+resources:
+    requests:
+        cpu: “500m“
+        memory: “1024Mi"
+    limits:
+       cpu: “1000m"
+       memory: “2048Mi"
+The above configuration means the container will be assigned 1/2 CPU core, while its cannot utilize more than 1 CPU core.
+Memory Resource
+Just like CPU, we can specify the memory requirements of a container. Memory resources are defined in bytes. But we can use a simple Integer value or a value with suffix like P, T, G, M, K or two letter suffixes like Pi, Ti, Gi, Mi, Ki, etc. Usually, we give value is mebibyte which is same as megabyte.
+Just like CPU, if you put in a memory request that is larger than the amount of memory on your nodes, the pod will never be scheduled.
+resources:
+    requests:
+        cpu: “500m“
+        memory: “1024Mi"
+    limits:
+       cpu: “1000m"
+       memory: “2048Mi"
+
+Kubernetes Pod Creation – What happen when we are create a pod?
+For that lets take one sample pod.yaml for this tutorials and walk with that.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-demo
+spec:
+  containers:
+    - name: webserver
+      image: nginx
+      ports:
+        - name: webserver
+          containerPort: 80
+As we know we can just apply this yaml with following command,
+kubectl apply -f pod.yaml
+What happens, now? Let’s see.
+You can watch this post in video also
+Store the state in Etcd
+When you apply the definition will be received and inspected by the API servers and same time it stores in etcd. Also, it will be add to the Scheduler’s queue.
+Once it is added to schedule, kube-scheduler inspected the yaml file and collect the details defined in that like resources etc, based on that it picks the best node to run it using filters and predicates.
+At last, the pod will be marked as scheduled, node assigned and state stored in Etcd. This is not end, so we have crossed just phase 1, and so far, all completed in control plane or master node and stored the state in the database.
+ 
+Well, what is next and what happen next
+The kubelet — the Kubernetes agent
+We all know Kubelet’s job to poll the control plane or master node for updates.
+If there is any pod to create, it will collect the details and creates it.
+Again, Not done yet.
+The kubelet doesn’t create the Pod by itself. Instead, it delegates the work to three other components:
+1.	The Container Runtime Interface (CRI) — the component that creates the containers for the Pod.
+2.	The Container Network Interface (CNI) — the component that connects the containers to the cluster network and assigns IP addresses.
+3.	The Container Storage Interface (CSI) — the component that mounts volumes in your containers.
+If you worked on docker, then you may aware how the containers are getting created, same done by the Container Runtime Interface (CRI), as like the below command,
+docker run -d <image-name>
+The Container Networking Interface (CNI) is always interesting because it is in charge of:
+1.	Generating a valid IP address for the Pod.
+2.	Connecting the container to the network.
+When the Container Network Interface finishes its job, the Pod is connected to the network and with valid IP address assigned.
+Good, is this end? As we the pod got created and IP got assigned, you may ask now the traffic should serve right, there is a trick. This two-operation done on node or in Kubelet side, so far control plane or master node thinks, still the pod is getting created. So far, all the details only know by Kubelet, so there is no traffic will be routed by the control plane.
+It’s the role of the kubelet to collect all the details of the Pod such as the IP address and report them back to the control plane it will be stored on etcd.
+If you query in etcd, it will show status of the pod and IP address details.
+ 
+Good, The Pod is created and ready to use.
+Again, this is end of journey if the pod not part any service. If the pod is part of any service, still there some additional steps to complete. What is that? Let’s see.
+Services
+Before we proceeding, lets understand bit about services, When we create a Service, mainly following 2 information we are concern about.
+1.	The selector, which is used to specify the Pods that will receive the traffic.
+2.	The targetPort — the port used by the Pods to receive traffic.
+A typical YAML definition for the Service looks like this:
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-service
+spec:
+  ports:
+  - port: 80
+    targetPort: 81
+  selector:
+    name: app-demo
+When you apply the Service to the cluster with kubectl apply, Kubernetes finds all the Pods that have the same label as the selector (name: app-demo) and collects their IP addresses — but only if they passed the Readiness probe.
+Once it has the IP details, it stores in etcd as an endpoint by concatenates the IP address and the port.
+Let’s assume the IP is 192.0.0.1 and the targetPort is 81, Kubernetes concatenates the two values and calls them an endpoint – 192.0.0.1:81
+The Endpoint object is a real object in Kubernetes and for every Service Kubernetes automatically creates an Endpoint object. The Endpoint collects all the IP addresses and ports from the Pods.
+Every time when you create the pod, the Endpoint object is updated with a new list of endpoints when:
+1.	A Pod is created.
+2.	A Pod is deleted.
+3.	A label is modified on the Pod.
+So, it is Kubelet’s job to every time whenever there is any change update to master node, Kubernetes updates all the endpoints to reflect the change.
+ 
+Are you ready to start using your Pod?
+Definitely not.
+Consuming endpoints
+Endpoints are used by several components in Kubernetes. Example, Kube-proxy uses the endpoints to set up iptables rules on the Nodes, this is repeated task for kube-proxy whenever there are new changes.
+As like kube-proxy, Ingress controller is another object uses the same list of endpoints.
+Yon can see below ingress manifest,  we are specifying the Service as the destination:
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-demo
+spec:
+  rules:
+  - http:
+      paths:
+      - backend:
+          service:
+            name: service-demo
+            port:
+              number: 80
+        path: /
+        pathType: Prefix
+In reality, the traffic is not routed to the Service.
+Instead, the Ingress controller sets up a subscription to be notified every time the endpoints for that Service change. With that, The Ingress routes the traffic directly to the Pods by skipping the Service.
+As you can imagine, every time there is a change to an Endpoint (the object), the Ingress retrieves the new list of IP addresses and ports and reconfigures the controller to include the new Pods.
+ 
+CoreDNS, the DNS component in the cluster, is another example.
+If you use Services of type Headless, CoreDNS will have to subscribe to changes to the endpoints and reconfigure itself every time an endpoint is added or removed.
+The same endpoints are consumed by service meshes such as Istio or Linkerd, by cloud providers to create Services of type:LoadBalancer and countless operators.
+You must remember that several components subscribe to change to endpoints and they might receive notifications about endpoint updates at different times.
+Well now we are really done. Yeah this all happens in a second when you just apply the manifest, and seeing the pod running.
+
+
+
+How to Delete all the Evicted Pods in Kubernetes – Troubleshooting
+
+If you are managing the Kubernetes cluster or trying to set your own, you may notice some pods in evicted status. This happens when the pods run with lack of resources like CPU or memory or due to some application error, then Kubernetes restart these evicted pods, but still when you run the kubectl get pod command, you will see the evicted pods sometimes.
+Before we see how to clear all evicted pods, we let see how to check the pods and get the evicted. To list down all the pods, in particular namespace (here, foxutech), you can run the following command:
+# kubectl get pod -n foxutech
+As you know this will list all the pods on the foxutech namespace.
+Why Evicted Pod matters?
+Let’s consider, you have too many evicted pods in your cluster, this can lead to network load in each pod, even though it is evicted, it is connected to the network and, This will be problematic if you are using cloud Kubernetes cluster as this will block an IP address, which can lead to exhaustion of IP addresses too if you have a fixed pool of IP addresses for your cluster.
+Also, when we have too many pods in Evicted status, it becomes difficult to monitor the pods by running the kubectl get pod command as you will see too many evicted pods, which can be a bit confusing at times.
+Delete Evicted Pods
+We can use the kubectl delete pod command to delete any pod in Kuberenetes. But with this command, we need to provide the pod name to delete any particular pod.
+If you have one or two pods to delete, you can easily do that, by first running the kubectl get pod command:
+# kubectl get pod -n foxutech
+NAME                         READY   STATUS    RESTARTS   AGE
+web-server-df45976b8-6d8mc   2/2     Running   0          8h
+web-server-df45976b8-z26qj   2/2     Running   0          8h
+web-server-df45973b8-z16qj   2/2     Evicted   0          8h
+nginx-deployment-5d59d67564  1/1     Running   0          8h
+nginx-deployment-5r58d67383  1/1     Running   0          8h
+nginx-deployment-5h52d63383  1/1     Evicted   0          8h
+Then using the pod name to delete the pod, like below:
+# kubectl delete pod nginx-deployment-5h52d63383 -n foxutech
+The above command will delete the pod with name nginx-deployment-5h52d63383 in foxutech namespace and will release all the resources held by that pod.
+What If?
+As this is just one or two pods, we can easily delete it, what if there is more than 10+ pods in evicted state? Well, no problem again as we are using Linux it simplifies this kind of operations, with just single command.
+# kubectl get pod -n foxutech | grep Evicted | awk '{print $1}' | xargs kubectl delete pod -n foxutech
+In the above command, we are searching for the pods with status Evicted and clearing it using kubectl delete pod command for all of them.
+You can also use the above command to delete pods in any particular status like Running, Evicted, CrashLoopBackOff, etc.
+If in your environment is frequently getting evicted, use this command and automate via some cron or some your preferable way. Also try to apply namespace resource quotas and limit range, this will help to manage pods resource consumption.
+
+
+Kubernetes ImagePullBackOff: Troubleshooting with Examples
+Currently we are seeing how to troubleshoot the Kubernetes issue and related topics. Part of that, today let see another important error, you may have experienced sometime this error when you worked on the Kubernetes. This error could frustrate if you are unfamiliar with it, as this doesn’t have single reason to fail, there is varies possible reason beyond this error. Like that we have picked on the error which is nothing but “Kubernetes ImagePullBackOff error”, in this post, we are going to see what could be a reason for this error and how to troubleshoot it.
+What Does an ImagePullBackOff Error Mean?
+The ImagePull part of the ImagePullBackOff error primarily relates to your Kubernetes container runtime unable to pull the image from a private or public container registry. The Backoff part indicates that Kubernetes will continuously pull the image with an increasing backoff delay. Kubernetes will keep on increasing the delay with each attempt until it reaches the limit of five minutes.
+Here are some of the possible causes behind your pod getting stuck in the ImagePullBackOff state:
+•	Image is not defined properly
+•	Tag may changed/missing/incorrect
+•	Image name/path not correct
+•	Image missing/incorrect
+•	Image may private, and there is a auth failure
+•	Check pull secret defined or not
+•	Secret name Is correct?
+•	Secrets are correct?
+•	Network issue
+•	Container registry Rate Limits
+How we can Troubleshoot ImagePullBackOff?
+Live Demo:
+Let’s check one by one reason listed above, and how to fid the issue.
+Image is not defined properly
+In most cases, the error could be either from a typo or the reference is not correct, and you’re referring to an image with different path. Let’s try to replicate this by creating a pod with a fake image name.
+# kubectl run demoapp --image=foxutech/foxutechimage:latest
+deployment.apps/demoapp created
+As you can see, the pod is stuck in an ImagePullBackOff because the image doesn’t exist and we cannot pull the image.
+# kubectl get pod
+NAME                       READY   STATUS             RESTARTS   AGE
+demoapp-6fbd57ff7c-78ms8   0/1     ImagePullBackOff   0          28s
+For better understand the issue and find more details about this error, use the kubectl describe command, if there is details, you can use kubectl get events command.  With this error we could see what is the main reason the pod is stuck. In the describe, you can check on events section which will contains detailed explanations.
+ 
+Issue with Tag
+There could be cases where the image tag you’re trying to pull is retired, or you entered the wrong tag name. In those cases, your pod will again get stuck in the ImagePullBackOff state, as seen in the following code snippet.
+Let’s try to declare some wrong tag and see, how it looks like.
+# kubectl run nginx --image=nginx:foxutech
+deployment.apps/nginx created
+# kubectl get pod
+In the following output, the message indicates that tag foxutech doesn’t exist for image nginx.
+Failed to pull image "nginx:foxutech": rpc error: code = Unknown desc = Error response from daemon: manifest for nginx:foxutech not found: manifest unknown: manifest unknown
+Hence the image pull is unsuccessful.
+# kubectl describe pod nginx
+ 
+Image Missing
+Another reason, if we automated any image build and push, we expect it should complete automatically, but some unexpected case, the image push got failed or other issue, but without knowing that, if we try to deploy a pod, it will stick imagepullbackoff error.
+You can check this image is in the registry and try again. Let’s try something,
+# kubectl run nginx --image=imagename/imagename:v1 
+deployment.apps/imagename created
+As you can check the imagename is not valid, it will fail for sure.
+# kubectl get po
+NAME                         READY   STATUS             RESTARTS   AGE 
+imagename-8665fffb48-7zz8q   0/1     ImagePullBackOff   0          28s
+Private Image Registry and Wrong Credentials or not defined/Provided
+In enterprise world we are suggested or proposed to use the internal/private registry to store the image or some vendor may distribute via, their private registry. This could be possible if the team/organization decide not to use public registry like dockerhub due to security or other internal reason, in this case, we should pass the authentication credential, otherwise the imagepull will fail with same error
+In the following example, we’re trying to replicate this issue by spinning up a pod that uses an image from a private registry.
+# cat pod.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: demoapp
+  namespace: default
+spec:
+  containers:
+    - name: nginx
+      image: foxutech.azurecr.io/nginx
+      imagePullPolicy: IfNotPresent
+  imagePullSecrets:
+    - name: acr-secretes
+We have neither added a secret to Kubernetes nor reference of the secret in pod definition. The pod will again get stuck in the ImagePullBackOff status and the message confirms that access is denied to pull an image from the registry:
+# kubectl describe pod mypod
+To resolve this error, create a secret using the following kubectl command. The following kubectl command creates a secret for a private Docker registry.
+# kubectl create secret docker-registry acr-secrets \
+    --namespace argocd-motoskia \
+    --docker-server=foxutech.azurecr.io \
+    --docker-username=foxutech \
+    --docker-password=8owM7r+c0KGGxymAJ8291poPm0Wzx3BN
+Add your secret to your pod definition, as explained in the following snippet.
+Network Issue
+There could be a widespread network issue on all the nodes of your Kubernetes cluster, and the container runtime will not be able to pull the image from the container registry. Let’s try to replicate that scenario.
+# kubectl run nginx --image=nginx:latest 
+pod/nginx created
+# kubectl describe pod nginx
+Failed to pull image "nginx:latest": rpc error: code = Unknown desc = failed to pull and unpack image "docker.io/library/nginx:latest" : failed to resolve reference "docker.io/library/nginx:latest" : failed to do request: Head https://registry-1.docker.io/v2/library/nginx/manifests/latest: dial tcp: lookup registry-1.docker.io on 192.168.64.1:53: server misbehaving
+Container Registry Rate Limits
+Most container registries have implemented some rate limits (i.e., number of images you can pull) to protect their infrastructure. For example, with Docker Hub, anonymous and free Docker Hub users can only request 100 and 200 container image pull requests per six hours. If you exceed your maximum download limit, you’ll be blocked, resulting in ImagePullBackOff error.
+To resolve this for Docker Hub, you would need to upgrade to a Pro or Team account. Many other popular container image registries like GCR or ECR also has same limitations.
+
+Kubernetes Pod Graceful Shutdown – How?
+
+In any application lifecycle, there are various reason pods get terminated, as like that in Kubernetes also it happens, either by user providing Kubectl delete or any updates etc. Other hand it may get terminated due to resource issue. In this case, Kubernetes allows the containers running in the pod to get shutdown gracefully with some configuration. Before we see about the configuration, lets understand how the delete/termination operation follows.
+Once the user provided the kubectl delete command, it will be passed to API server, from there endpoints will be remove from the endpoints object, as we seen while pod creation the endpoint is important to get update for serving any services.
+In this operation readiness probe are ignored and it will be directly removing the endpoint from the control plane. This will trigger the events to kube-proxy, ingress controller, DNS, etc.
+So, with this all those components updates their reference and stop serving traffic to the IP address, please be note, this may be quick operation but sometimes the component may busy by performing some other operations. Hence there will be some delay expected, so the reference won’t be get updated immediately.
+In the same time, status of the pod in etcd changes the status to Terminating.
+You can watch also in youtube:
+Kubelet get notified from the polling and it assigns the operation to components as like pod creation. Here
+•	Unmounting any volumes from the container to the Container Storage Interface (CSI).
+•	Detaching the container from the network and releasing the IP address to the Container Network Interface (CNI).
+•	Destroying the container to the Container Runtime Interface (CRI).
+Follow image may explains the change getting performed.
+ 
+Hope the image is clear and you could see the key difference between pod creation and deletion. While the pod creation we have seen Kubernetes waited for the update from Kubelet to report the IP details and then updated the endpoints. But when the pod gets terminate, it removes the endpoint and also update to Kubelet sametime.
+How this could be an issue? well here is the catch, as we said sometime the components takes time to update the endpoints, in this case what if the pod gets deleted before the endpoints get propagated, yes, we will face downtime. But why?
+As mentioned still the ingress or any high-level services are not got updated, still it forwards the traffic to the pod which is already removed. But we might think, it is Kubernetes responsibility to update the changes to across the cluster and should avoid such an issue.
+But it is definitely not.
+As Kubernetes uses endpoint object and advanced abstractions like Endpoint Slices, to distribute the endpoints, it doesn’t verify the changes up-to-date on the components.
+ 
+Hmm, how we can avoid these scenarios, as this may cause the downtime and we cannot maintain the 100% application uptime. Only option to achieve this, pod should wait to get deleted before the endpoint updated. We guessed just by seeing the situation, but is that possible? Let’s check it.
+terminationGracePeriodSeconds
+For that we should understand some deep understand about what happens in containers when the delete given.
+When the delete has been given to pod, it receives the SIGTERM signal. By default, Kubernetes will send the SIGTERM signal and waits for 30 seconds before force killing the process. So we can enable some option to wait for sometime and then perform the action, like.
+•	Wait for sometimes before exiting.
+•	Still process the traffic for some time, like 10-20secs.
+•	Then close all the backend connections like database, WebSocket
+•	Finally close the process.
+Incase if you application expects more time (more then 30sec) to stop, then you can include or change terminationGracePeriodSeconds in your pod definition.
+You can include a script to wait for some time and then exit. In this case, before the SIGTERM invoked, Kubernetes exposes a prestop hook in the pod. You can mention like below,
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-pod
+spec:
+  containers:
+    - name: nginx
+      image: nginx
+      ports:
+        - name: nginx
+          containerPort: 80
+      lifecycle:
+        preStop:
+          exec:
+            command: ["sleep", "10"]
+With this option, you could see the Kubelet wait for 30s and then progress the SIGTERM, but noted this again may not sufficient, as you application may still processing some old requests. How you avoid those? You can achieve this by adding “terminationGracePeriodSeconds” with this setting it will wait further and then terminate the container. The final manifest will be looks like this,
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-pod
+spec:
+  containers:
+    - name: nginx
+      image: nginx
+      ports:
+        - name: nginx
+          containerPort: 80
+      lifecycle:
+        preStop:
+          exec:
+            command: ["sleep", "10"]
+        terminationGracePeriodSeconds: 45
+This setting should help the application to process all the requests and close the connections. This will avoid the forceful shutdown.
+ 
+Command line
+You can also change the default grace period when you manually delete a resource with kubectl delete command, adding the parameter --grace-period=SECONDS. For example:
+# kubectl delete deployment test --grace-period=60
+Rolling updates
+One another reason pods get deleted while we are upgrading or deploying new version. Lets assume you are running a v1.1 version with 3 replicas, and now upgrading to v1.2, what happens?
+•	Creates a Pod with the new container image.
+•	Destroys an existing Pod.
+•	Waits for the Pod to be ready.
+•	Repeats until all the pods are moved to new version.
+Cool, this make sure the new version deployed, but what about old pods, Kubernetes waits until all the pods get deleted? Answer is NO.
+Its keep moves on, the old version pods will be terminated and removed gracefully. But sometime you may see there is 2x no of pods, as old ones still getting removed.
+Terminating long-running tasks
+Even we have taken all the precaution, still there will be some applications or websockets needs to serve for long or we cannot stop while if there is any very long operation running or requests being utilized. In that time, rolling update will be in risk. How we can overcome?
+There are two options,
+1.	You can increase the terminationGracePeriodSeconds to couple of hours.
+2.	Or creating new deployment, instead updating existing one.
+Option 1: When you to do so, the endpoint of the pod is unreachable meantime. Also note, you cannot use any monitoring tool also to track those pods, you should monitor manually. As all the monitoring tools collects the information from the endpoints, once it is removed, even monitoring tools will be follow the same.
+Option 2: When you create the new deployment, your old one will be there still. So, all the long running process will be still running and completes. When you see the processes are completed you remove the old ones manually.
+If you wish to delete them automatically, you can to set up an autoscaler that can scale your deployment to zero replicas when they run out of tasks. This is useful every time, so you can keep previous pods Running for longer than the grace period.
+ 
+Another excellent example is WebSockets.
+If you are serving real-time updates to your clients, you might not want to terminate the WebSockets every time there is a release. If you are frequently releasing during the day, that could lead to several interruptions to real-time feeds.
+Creating a new Deployment for every release is a less obvious but better choice. Existing users can continue utilizing updates while the most recent Deployment serves the new users. As a user disconnects from old Pods, you can gradually decrease the replicas and retire old Deployments.
+Hope this is useful, check the possibilities and pick whatever matches your environment need.
+
+
+Kubernetes Custom Resource Definition (CRDs)
+By motoskia -
+ 
+July 18, 2022
+0
+236
+
+Share on Facebook
+ 
+Tweet on Twitter
+  
+ 
+In the IT world, we mayn’t get always what we are want, especially with opensource, as there will be some feature still missing. If it is enterprise application or in-house, we have some option to get the feature enabled by request. With opensource, we should customize what we are looking for (if the tool/software supports). Like that even in Kubernetes, though it gives wide range of solutions, still there will be some custom change required. For that Kubernetes has enabled Custom Resource Definition from version 1.7, this enables user to create their own/custom objects to the Kubernetes cluster and define the kind just like pod, deployment, etc.
+In this post, lets discuss about custom resource definition (CRD), what CRDs are, how to use and create it.
+What is a Custom Resource Definition (CRD)
+As we mentioned above in the Kubernetes API, a resource is an endpoint that stores a collection of API objects of a certain kind. The standard Kubernetes distribution comes with lot of inbuilt API objects/resources. For example, the built-in pods’ resource contains a collection of Pod objects. CRD comes when we want to introduce our own object into the Kubernetes cluster to fulfil our custom requirements. Once we create a CRD in Kubernetes we can use it like any other native Kubernetes object thus leveraging all the features of Kubernetes like its CLI, security, API services, RBAC etc.
+The custom resource created is also stored in the etcd cluster with proper replication and lifecycle management. This is a powerful way to extend Kubernetes capabilities beyond the default installation. Also, it allows us to extend Kubernetes capabilities by adding any kind of API object useful for our application. This is a powerful way to extend Kubernetes capabilities beyond the default installation.
+How to create a CRD
+The manifest below shows an example CRD crd.yaml, You can modify it based on your need or understanding.
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: foxcrds.foxutech.com
+spec:
+  group: foxutech.com
+  names:
+    kind: foxcrds
+    listKind: foxcrdslist
+    plural: foxcrds
+    singular: foxcrd
+  scope: Namespaced
+  versions:
+  - name: v1
+    schema:
+      openAPIV3Schema:
+        description: foxcrd is the foxutech custom resource definition
+        type: object
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: foxcrdsSpoc is the spec for a foxcrds resource
+            type: object
+            properties:
+              title:
+                type: string
+              author:
+                type: string
+          status:
+            description: foxcrdsStatus is the status for a foxcrds resource
+            type: object
+            properties:
+              publishedAt:
+                type: string
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
+Let’s explain what the CRD above will create:
+•	The first two lines defines what the apiversion is and we are saying we want to create a custom resource definition.
+•	The metadata field helps us define what the name of the resource is. In our case foxcrds (plural).
+•	Spec group help us define what the group name will be.
+•	Spec version helps us define the version. In our case we are versioning it as v1.
+•	As you can see, we can define a version of our CRD and only one version can be a storage version at a time, so keep that in mind. We then made sure that this CRD is a namespaced and not cluster wide. This allows us to create the CRD for either just a specific namespace or for the whole cluster.
+•	Next, we defined what the singular and plural name of our CRD will be.
+•	Lastly, we defined the kind name and the short name. We can then create it with “kubectl create -f crd.yaml”. The new namespaced RESTful API endpoint for our CRD will be found at /apis/stable.example.com/v1/namespaces/*/foxcrds/
+You can check the api-resources using following command,
+# kubectl api-resources --api-group=foxutech.com
+# kubectl explain foxcrd
+Well, now the CRD is ready, to use, the CRD above, we need to create a manifest using the kind we created with the CRD.
+# kubectl apply -f - <<EOF
+apiVersion: foxutech.com/v1
+kind: foxcrd
+metadata:
+  name: foxcheck
+spec:
+  title: Yet another post about kubernetes 
+  author: Motoskia
+EOF
+foxcrd.foxutech.com/foxcheck created
+As you can see, we are using the kind we defined in our CRD, then we defined the fields we want our kind object to have.
+To see what is going on we can run “kubectl get foxcrds”, we can see detailed info on what we just created.
+How to delete a CRD
+To delete the CRD and resources we created, simply run kubectl delete just like with any other resources. It is important to know that the above CRD is just data which can be stored and retrieved therefore, it doesn’t give us a fully declarative API. The way to make this resource fully declarative is to add a custom controller, whose job is to make sure that the current state and the desired state are always in sync. An example is something like a replication controller.
+Now that Kubernetes knows about the concept and structure of a foxcrd, it will let me create multiple foxcrd objects.
+But, I’m a cluster-admin. I need to allow regular (non-admin) users to be able to create and delete foxcrd objects. Let’s see how we can do that.
+Allowing regular users to create CRD
+Once you’ve created a CRD, it’s generally available in the Kubernetes API, cluster-wide, although you can limit exactly who can create these objects.
+You can create a new ClusterRole and grant the permissions to it:
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: foxcrd-admin
+rules:
+  - apiGroups: ["foxutech.com"]
+    resources: ["foxcrds"]
+    verbs: ["get", "list", "watch", "create",
+            "update", "patch", "delete", "deletecollection"]
+And for the view permission:
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: foxcrd-view
+rules:
+  - apiGroups: ["foxutech.com"]
+    resources: ["foxcrds"]
+    verbs: ["get", "list", "watch"]
+Well, hope this give some idea about custom resource definition (CRD), you can expand this with multiple use cases. We will be seeing more about this in coming posts.
+About ConfigMap in Kubernetes
+  
+ 
+As we are seeing some most frequently using Kubernetes resources in last couple of posts, in this we are going to see one of the more important Kubernetes resources called configMap. We are going to see what is configMap, how to create, manage and use it within cluster.
+If you are recently started using Kubernetes or just managing partially, you may get a question like how I can manage my application configuration externally or dynamically, where I can define the connection strings, external service URLs, custom configuration values for multiple environments. Where to store that? And if that possible?
+YOU CAN LEARN MORE KUBERNETES AND LATEST TECHNOLOGIES ON UDEMY, DEAL EXTENDED: COURSES UP TO 85% OFF 
+The simple answer is yes, Kubernetes has resource called ConfigMaps.
+ 
+In this article, lets learn about how to use ConfigMaps in Kubernetes also how to create ConfigMaps mount them in volumes, and use them as environment variables.
+What is a ConfigMap in Kubernetes?
+A ConfigMap is an API object used to store non-confidential data in key-value pairs. Pods can consume ConfigMaps as environment variables, command-line arguments, or as configuration files in a volume.
+A ConfigMap allows you to decouple environment-specific configuration from your container images, so that your applications are easily portable.
+Note: ConfigMap does not provide secrecy or encryption. If the data you want to store are confidential, use a Secret rather than a ConfigMap, or use additional (third party) tools to keep your data private.
+What is the use of ConfigMap?
+It been always recommended to keep the configuration setting separate to make sure it can be reused wildly. As per Twelve-Factor Application it helps to maintain the config between environments as there will be changes on DB values, resources, external service and hostname, etc.
+This lets you change easily configuration depending on the environment (development, QA, production and etc.) and to dynamically change configuration at runtime.
+How does a ConfigMap work?
+Let’s assume you have multiple environments, (even with single environment you can use, there is no limitation) and each has different configuration values. you have multiple ConfigMaps, one for each environment. ConfigMap is created and added to the Kubernetes cluster.
+Last, containers in the Pod reference the ConfigMap and use its values.
+ 
+Create and mount ConfigMap as volume
+With Yaml configmap is easy to create and manage, This will lets you create that ConfigMap like any other Kubernetes resources using `kubectl apply -f $file.yaml`. After that, you mount the ConfigMap as a Volume in your Pod’s YAML specification.
+Define the ConfigMap in a YAML file.
+Create a YAML file setting the key-value pairs for your ConfigMap.
+apiVersion: v1
+kind: ConfigMap 
+
+metadata:
+  name: test-configmap 
+data:
+  # Configuration values can be set as key-value properties
+  database: mongodb
+  database_uri: mongodb://localhost:27017
+  
+  # Or set as complete file contents (even JSON!)
+  keys: | 
+    image.public.key=771 
+    rsa.public.key=42
+Create the ConfigMap in your Kubernetes cluster
+Create the ConfigMap using the command 
+# kubectl apply -f config-map.yaml
+Mount the ConfigMap through a Volume
+Each property name in this ConfigMap becomes a new file in the mounted directory (`/etc/config`) after you mount it.
+kind: Pod 
+apiVersion: v1 
+metadata:
+  name: pod-using-configmap 
+
+spec:
+  # Add the ConfigMap as a volume to the Pod
+  volumes:
+    # `name` here must match the name
+    # Specified in the volume mount
+    - name: test-configmap-volume
+      # Populate the volume with config map data
+      configMap:
+        # `name` here must match the name 
+        # Specified in the ConfigMap's YAML 
+        name: test-configmap
+
+
+  containers:
+    - name: container-configmap
+      image: nginx:1.20.2
+      # Mount the volume that contains the configuration data 
+      # into your container filesystem
+      volumeMounts:
+        # `name` here must match the name
+        # from the volumes section of this pod
+        - name: test-configmap-volume
+            mountPath: /etc/config
+Attach to the created Pod using `kubectl exec -it pod-using-configmap sh`. Then run `ls /etc/config` and you can see each key from the ConfigMap added as a file in the directory. You can use `cat` to look at the contents of each file and you’ll see the values from the ConfigMap.
+Create a ConfigMap with Environment Variables and `envFrom`?
+You can consume a ConfigMap via environment variables in a running container using the `envFrom` property.
+Create the ConfigMap using the example from the previous section. Set the `envFrom` key in each container to an object containing the list of ConfigMaps you want to include.
+kind: Pod 
+apiVersion: v1 
+metadata:
+  name: pod-env-var 
+spec:
+  containers:
+    - name: env-var-configmap
+      image: nginx:1.20.2 
+      envFrom:
+        - configMapRef:
+            name: test-configmap
+Attach to the created Pod using `kubectl exec -it pod-env-var sh`. Then run `env` and see that each key from the ConfigMap is now available as an environment variable.
+Please note: ConfigMaps consumed as environment variables are not updated automatically and require a pod restart.
+Creating a ConfigMap
+Here is the pattern for kubectl, use this kubectl command:
+# kubectl create configmap <name> <data-source>
+The <name> is the name of the ConfigMap, which should be valid for use as a DNS subdomain. The <data-source> indicates the files or values from which ConfigMap data should be obtained.
+You can create ConfigMaps based on one file, several files, directories, or env-files (lists of environment variables). The basename of each file is used as the key, and the contents of the file becomes the value.
+ConfigMap Data Source	Example kubectl command
+Single file	kubectl create configmap app-settings –from-file=app-container/settings/app.properties
+Multiple files	kubectl create configmap app-settings –from-file=app-container/settings/app.properties–from-file=app-container/settings/backend.properties
+Env-file	kubectl create configmap app-env-file–from-env-file=app-container/settings/app-env-file.properties
+Directory	kubectl create configmap app-settings –from-file=app-container/settings/
+You can get more information about this command using 
+# kubectl create configmap --help
+Immutable ConfigMaps
+The Kubernetes feature Immutable Secrets and ConfigMaps provides an option to set individual Secrets and ConfigMaps as immutable. For clusters that extensively use ConfigMaps (at least tens of thousands of unique ConfigMap to Pod mounts), preventing changes to their data has the following advantages:
+protects you from accidental (or unwanted) updates that could cause applications outages
+improves performance of your cluster by significantly reducing load on kube-apiserver, by closing watches for ConfigMaps marked as immutable.
+This feature is controlled by the ImmutableEphemeralVolumes feature gate. You can create an immutable ConfigMap by setting the immutable field to true. For example:
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  ...
+data:
+  ...
+immutable: true
+Once a ConfigMap is marked as immutable, it is not possible to revert this change nor to mutate the contents of the data or the binaryData field. You can only delete and recreate the ConfigMap. Because existing Pods maintain a mount point to the deleted ConfigMap, it is recommended to recreate these pods.
+Jobs and CronJobs in Kubernetes
+We have seen sidecar and init containers are in last article, in this will learn how to schedule Jobs and cronjobs in Kubernetes cluster.
+Kubernetes jobs and cronjobs are Kubernetes objects that are primarily meant for short-lived and batch workloads. Let’s see in details with in below steps.
+Types of Jobs in Kubernetes 
+There are two types of jobs in Kubernetes, here they are,
+•	Schedulers (CronJob) – It’s like scheduling tasks in crontab in Linux. 
+•	Run to Completion – It runs the Job in parallel by creating one or more pods for the successful completion 
+A Kubernetes job creates one or more Pods and will continue to retry execution of the Pods until a specified number of them successfully terminate. As pods are completed, the Job tracks the successful completions. When a specified number of successful completions is reached, the task aka Job is completing. Deleting a Job will clean up the Pods it created.
+A simple case is to create one Job object to reliably run one Pod to completion. The Job object will start a new Pod if the first Pod fails or is deleted (for example due to a node hardware failure or a node reboot).
+You can also use a Job to run multiple Pods in parallel, you will have control to limit the count.
+When a specified number of pods completed, the job itself is complete. If the first pod fails or is deleted, the Job controller will start a new Pod.
+The job is designed for parallel processing of independent but related work items like sending emails, transcoding files, scanning database keys, etc. Find the example on parallel job section.
+Here is the manifest for a Job:
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: example-job
+spec:
+  template:
+    metadata:
+      name: example-job
+    spec:
+      containers:
+        -
+          args:
+            - "-Mbignum=bpi"
+            - "-wle"
+            - "print bpi(2000)"
+          command:
+            - perl
+          image: perl
+          name: pi
+      restartPolicy: Never
+Create a Job:
+# kubectl apply -f example-job.yaml
+job.batch "example-job" created
+Display your jobs:
+# kubectl get jobs
+NAME                COMPLETIONS   DURATION   AGE
+example-job-27540900   1/1           2s         4m33s
+ 
+Get details of a job:
+# kubectl describe job 
+Edit a job:
+# kubectl edit job 
+Delete a job:
+# kubectl delete job 
+Running Multiple Job Pods in Parallel 
+Sometimes we need to create a parallel job to accomplish some tasks, for that lets create sample multiple-jobs file and check how it goes.
+apiVersion: batch/v1
+kind: Job
+metadata:
+    generateName: kube-jobs-
+    name: kube-parallel-job
+    labels:
+      jobgroup: kubecron-group
+spec:
+    completions: 3
+    parallelism: 2
+    template:
+      metadata:
+         name: kube-parallel-job
+         labels:
+           jobgroup: kubecron-group
+      spec:
+        containers:
+        - name: busybox
+          image: busybox
+          command: ["echo" , "kubernetes jobs parallel"]
+        restartPolicy: OnFailure 
+Let’s Understand the parameters used in above file. Running multiple jobs with the same name will cause an error reporting that the job with the same name already exists.  To fix this issue, we should add the generateName field in the metadata section. So, when the Job is executed, it will create the pods with prefix kube-jobs– and with numbers. 
+completions – the no. of pods that can be used for the successful completion. restartPolicy – accepts always, Never, OnFailure.  
+
+As the jobs are intended to run pods till completion, we should use never and onFailure for restartPolicy. 
+Run the kubectl create, get, delete the multiple-jobs.yaml to see what it does.
+Cron Jobs
+A CronJob object is just like an entry in crontab in Unix/Linux. It runs a job periodically on a given schedule. You need a working Kubernetes cluster at version >= 1.8 (for CronJob).
+For previous versions of the cluster (< 1.8) you need to explicitly enable batch/v2alpha1 API by passing — runtime-config=batch/v2alpha1=true to the API server.
+Here is the manifest for Cronjob
+---
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: hello
+spec:
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            -
+              args:
+                - /bin/sh
+                - "-c"
+                - "date; echo Hello FoxuTech, from the your AKS cluster"
+              image: busybox
+              name: hello
+          restartPolicy: OnFailure
+  schedule: "*/1 * * * *"
+Create a Cron Job
+# kubectl create -f cronjob.yaml
+cronjob.batch “hello” created
+# kubectl get cronjobs
+NAME SCHEDULE SUSPEND ACTIVE LAST SCHEDULE AGE
+hello */5 * * * * False 0 32s
+ 
+Get details of a cronjob:
+# kubectl describe cronjob 
+Edit a cronjob:
+# kubectl edit cronjob 
+Delete a cronjob:
+# kubectl delete cronjob 
+Writing a Cron Job Spec
+As with all other Kubernetes configs, a cron job needs apiVersion, kind, and metadata fields.
+Schedule
+The .spec.schedule is a required field of the .spec. It takes a Cron format string, such as 0 * * * * or @hourly, as schedule time of its jobs to be created and executed.
+restartPolicy – accepts always, Never, OnFailure. 
+As the jobs are intended to run pods till completion, we should use never and onFailure for restartPolicy.
+The additional parameters can be used while creating a Cron job as follows. 
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+   name: test-job
+spec:
+   schedule: "*/5 * * * *" 
+   concurrencyPolicy: Forbid
+   successfulJobsHistoryLimit: 5
+   failedJobsHistoryLimit: 5
+   jobTemplate:
+     spec:
+       template:
+         spec:
+           containers:
+           - name: hello
+             image: busybox
+             command : ["echo", "Hello Kubernetes Job"]
+           restartPolicy: OnFailure 
+Concurrency Policy: is responsible for parallel jobs. 
+
+The following concurrency policy can be used as follows, 
+
+Allow – which by Default allow the cron job to run concurrently 
+Forbid – Doesn’t allow concurrent jobs. 
+Replace – The old job will be replaced with the new job if the old job is not completed on time. 
+Job History Limits: such as successfulJobHistoryLimit =3 and failedJobsHistoryLimit=1 are optional fields. 
+
+It refers how many successful and failed job history can be present on the cluster. Set the limit to 0, There won’t be any job history 
+backoffLimit: Total number of retries if your pod fails.
+activeDeadlineSeconds: You can use this parameter if you want to specify a hard limit on how the time the cronjob runs. For example, if you want to run your cronjob only for one minute, you can set this to 60.
+Kubernetes Jobs & CronJobs Use Cases
+The best use case for Kubernetes jobs is,
+Batch processing: Let’s say you want to run a batch task once a day or during a specific schedule. It could be something like reading files from storage or a database and feed them to a service to process the files.
+Operations/ad-hoc tasks: Let’s say you want to run a script/code which runs a database cleanup activity or to even backup a kubernetes cluster itself.
+
+
+How to debug a Kubernetes service deployment
+If you are working on kubernetes or heard about that with someone working on kubernetes, says Kubernetes is complex and hard to manage or troubleshoot. Same time you may see in kubernetes cluster either one, goes wrong sometimes. One of the key reasons for this could be it contains many components and variables, that may make it complicate to understand what the issue is.
+Always remember the fundamental rules of troubleshooting in any scenarios.
+1.	Use historical data, such as logs, and observation to identify the root cause of a problem.
+2.	One of the key rules for the troubleshooting When you are ascertaining the cause or trying a fix, change only one variable at a time.
+3.	Before trusting a fix, confirm that it works under different conditions.
+As like basic of the troubleshooting, you should understand the component or architecture of the tool, like that in Kubernetes understand the components and administrative commands. This is critical to execute the first rule successfully and to debug Kubernetes application and service deployments.
+Check the Events
+Kubectl is the primary administrative tool for Kubernetes clusters and includes other commands. The command “kubectl get” reveals basic information about a particular resource. For example, “kubectl get pods” lists the available pods and their status, while “kubectl get services” lists the applications running as a service on a set of pods.
+However, a more detailed option exists for troubleshooting: “kubectl describes pods”, also used as “kubectl describes pod (TYPE/NAME)”, provides detail about container or pod labels, resource requirements, state, readiness, restart count and events.
+For example, an admin finds that “kubectl get pods” for a Nginx application shows a particular pod isn’t running. Using “kubectl describe pod nginx-wcre” shows the admin that the pod couldn’t be scheduled, due to inadequate available resources. The following is a subset of returned output that demonstrates the problem:
+Name:      nginx-wcre
+  Namespace:    default
+  Node:         /
+  Labels:       app=nginx,pod-template-hash=fut
+  Status:       Pending
+...
+  Events:
+FirstSeen LastSeen Count From SubobjectPath Type Reason Message
+2m        56s      10    {default-scheduler} Warning
+FailedScheduling pod (nginx-deployment-wcre-as2aq) failed to fit in any node
+fit failure on node (kubernetes-node-xxx): Node didn't have enough resource: CPU, requested: 250, used: 800, capacity: 1000
+
+In this case resources are only one possible reason a pod might not work. Others include one or more downed nodes or connectivity problems with the internal or external load balancers.
+Check the service status
+In Kubernetes, externally accessible applications are exposed as a service to define a logical set of pods and access controls. Services are specified by a name and the targetPort attribute. The Kubernetes controller assigns the service a cluster IP address accessible by Ingress proxies. Administrators can encounter a problem when deploying a Kubernetes application by creating the pod but not the service. Verify the service status with the following commands:
+# wget -O- hostnames
+# kubectl get svc hostnames
+Either wget or kubectl could return an error like the following:
+Resolving hostnames (hostnames)... failed: Name or service not known.
+Or they could return this:
+No resources found.
+Error from server (NotFound): services "hostnames" not found
+These responses indicate that Kubernetes has not created the service. To fix this problem, create and validate the service with the following commands. In this example, the service port number is 8080.
+# kubectl expose deployment hostnames --port=80 --target-port=8080
+> service/hostnames exposed
+
+# kubectl get svc hostname
+Application deployments in Kubernetes
+The way in which Kubernetes exposes applications as outside services can confound troubleshooting. There are several abstraction layers separated by network load balancers, such as the following:
+•	Nodes host the containers used within a pod. As detailed by the Kubernetes documentation, containers within a pod communicate via the node’s loopback interface — 127.0.0.1 — while pods in a cluster communicate via Kubernetes’ internal cluster networking.
+•	Services are network resources that expose an application running in pods to users and other services outside the cluster.
+•	Ingress provides application layer mapping via HTTPS to services for external users. Ingress controllers segregate traffic to different services using name-based hosting. Open-source Kubernetes supports AWS Application Load Balancer, the Ingress controller for Google Cloud and Nginx Ingress controllers. Third parties support the Envoy proxy and Istio service mesh.
+Network and service configurations are often why a Kubernetes application is unreachable. This could be due to the service interface not pointing to a pod and port. To create a service, use the kubectl expose command. For example, to create and check a service configuration for a Nginx application, use the following:
+# kubectl expose deployment/nginx-app
+# kubectl describe svc nginx-app
+The output of the describe command in this example is the following:
+Name:                nginx-app
+Namespace:           default
+Labels:              run=nginx-app
+Annotations:         <none>
+Selector:            run=nginx-app
+Type:                ClusterIP
+IP:                  10.1.0.218
+Port:                <unset> 80/TCP
+Endpoints:           10.2.2.5:80,10.2.3.4:80
+Session Affinity:    None
+Events:              <none>
+A common error is not matching a service’s targetPort attribute with the port that the container uses in the pod, specified as containerPort. A similar problem occurs if the service port isn’t configured properly in the Ingress controller.
+Review event logs
+Kubernetes components, such as kube-apiserver, kube-scheduler, kube-proxy and kubelet, as well as the containers, nodes and applications that run on Kubernetes, each generate logs. Log information should be archived for review for use in troubleshooting.
+There is various log monitoring software’s in market for kubernetes, pick on the best and use it. As many tools collect information on and review Kubernetes events, such as kubewatch, Eventrouter and Event Exporter. These Kubernetes watchers can work in concert with log analysis software, like Grafana or Kibana.
+Sloop monitors Kubernetes, recording histories of events and resource state changes and providing visualizations to aid in debugging past events.
+Key features:
+•	Allows you to find and inspect resources that no longer exist (example: discover what host the pod from the previous deployment was using).
+•	Provides timeline displays that show rollouts of related resources in updates to Deployments, ReplicaSets, and StatefulSets.
+•	Helps debug transient and intermittent errors.
+•	Allows you to see changes over time in a Kubernetes application.
+•	Is a self-contained service with no dependencies on distributed storage.
+Debugging Kubernetes deployments — with their many abstraction layers and configuration parameters — requires a considered approach. Start with the basics, and work up the software stack:
+1.	Ensure that all pods are running. Check if any fail to deploy due to resource shortage.
+2.	Analyze the internal traffic flow to verify that service requests make it to the correct pod.
+3.	Test external traffic flow through a network load balancer and Ingress proxy to validate the network configuration.
+4.	Review the event history with a visualization tool, like Sloop or Grafana, to spot anomalies and correct unexpected events. These steps help administrators to ascertain the root cause of a service failure.
+
+Kubernetes Probes – Liveness, Readiness and Startup
+
+Readiness & Liveness Probe
+If my Pod is running that doesn’t mean, it’s working fine and can handle the traffic.
+Sometimes, applications are temporarily unable to serve traffic. For example, an application might need to load large data or configuration files during startup or depend on external services after startup. In such cases, you don’t want to kill the application, but you don’t want to send it requests either. So, to deal with this you should define a readiness probe.
+Sometimes, your application is running, but unable to make progress. Restarting a container in such a state can help to make the application more available despite bugs. Here, liveness probes could catch a deadlock and help you to restart the container. Read more
+The kubelet uses readiness probes to know when a container is ready to start accepting traffic.
+The kubelet uses liveness probes to know when to restart a container.
+
+
+
+Recently we have seen about pod requests and limits, now let’s see about another important and interest feature on Kubernetes. Which is nothing but Probes (Health Check). If you have worked on docker, you may know about health checks, which will help you to check the container status. As like that, here in Kubernetes we have certain condition which helps to make sure only we have healthy pods in our cluster. In additional this given option to find the startup duration, is pod ready for service, or live to serve traffic.
+Types of Probes
+Kubernetes gives you three types of health checks probes:
+1.	Liveness
+2.	Startup
+3.	Readiness
+ 
+Liveness Probe
+Liveness probes allow you to automatically determine container application (running in a container inside Pod) is healthy and also indicates whether the container is running. If app is unhealthy, Pod will be marked as unhealthy. If a Pod fails health-checks continuously, the Kubernetes terminates the pod and starts a new one.
+Sometimes, Liveness probes could help to find a deadlock, where you could see an application is still running, but unable to make any progress. Restarting a container in such a state can help to make the application to available.
+Also configure a health check that periodically checks if your application is still alive. Containers can be restarted if the check fails.
+Use Cases
+•	Use Liveness Probe to remove unhealthy pods.
+•	If you’d like your container to be killed and restarted if a probe fails, then specify a liveness probe, and specify a restartPolicy of Always or OnFailure.
+•	Use a liveness probe for a container that can fail with no possible recovery.
+•	If your container cannot crash by itself when there is an unexpected error occur, then use liveness probes. Using liveness probes can overcome some of the bugs the process might have.
+Best Practices
+The best way to implement the liveness probe is for application to expose a /health HTTP endpoint. When receiving a request on this endpoint, the application should send a 200-399 response if it is considered healthy.
+ 
+Readiness Probe
+•	Readiness probes are used to determine when a container is ready to accept requests. Kubernetes makes sure the readiness probe passes before allowing a service to send traffic to the pod.
+•	Unlike a liveness probe, a readiness probe doesn’t kill the container. If the readiness probe fails, Kubernetes simply hides the container’s Pod from corresponding Services, so that no traffic is redirected to it.
+•	Liveness probes do not wait for readiness probes to succeed. If you want to wait before executing a liveness probe you should use initialDelaySeconds or startupProbe.
+•	A side-effect of using Readiness Probes is that they can increase the time it takes to update Deployments.
+Use Cases
+•	Use Readiness Probe to detect partial unavailability.
+•	If you’d like to start sending traffic to a Pod only when a probe succeeds, specify a readiness probe.
+•	If you want your container to be able to take itself down for maintenance, you can specify a readiness probe that checks an endpoint specific to readiness that is different from the liveness probe.
+Best Practices
+The recommended way to implement the readiness probe is for your application to expose a /ready HTTP endpoint. When it receives a request on this endpoint, the application should send a 200-399 response if it is ready to receive traffic.
+ 
+Startup Probe
+•	These probes are very similar to liveness probes, however, while liveness probes run constantly on a schedule, startup probes run at container startup and stop running once they succeed.
+•	They are used to determine when the application has successfully started up.
+•	Startup probe has higher priority over the two other probe types. Until the Startup Probe succeeds, all the other Probes are disabled.
+•	Startup probes are useful in situations where your app can take a long time to start, or could occasionally fail on startup.
+•	Rather than set a long liveness interval, you can configure a separate configuration for probing the container as it starts up, allowing a time longer than the liveness interval would allow.
+Use Cases
+•	Use Startup Probe for applications that take longer to start.
+•	When your app needs additional time to startup, you can use the Startup Probe to delay the Liveness and Readiness Probe.
+•	If your container needs to work on loading large data, configuration files, or migrations during startup, you can use a startup probe.
+ 
+Possible options to check:
+Kubelet can check a Pods health in three ways. Each probe must define exactly one of these mechanisms:
+HTTP
+•	We define a Port number along with the URL. Kubernetes pings this path, and if it gets an HTTP response in the 200 or 300 range, it marks the app as healthy. Otherwise, it is marked as unhealthy.
+•	HTTP probes are the most common type of custom probe.
+•	Even if your app isn’t an HTTP server, you can create a lightweight HTTP server inside your app to respond to the liveness probe.
+TCP
+•	Kubernetes tries to establish a TCP connection on the specified port. If it can establish a connection, the container is considered healthy; if it, can’t it be considered unhealthy.
+•	TCP probes come in handy if you have a scenario where HTTP probes or Command probes don’t work well.
+•	For example, a gRPC or FTP service is a prime candidate for this type of probe.
+Command
+•	Kubernetes runs a command inside the container. If the command returns with exit code 0, then the container is marked as healthy. Otherwise, it is marked unhealthy.
+•	This type of probe is useful when you can’t or don’t want to run an HTTP server, but can run a command that can check whether or not your app is healthy.
+Facts
+•	While Liveness probe detects failures in an app that are resolved by terminating the Pod (i.e. restarting the app), Readiness Probe detects conditions where the app may be temporarily unavailable.
+•	Liveness probe passes when the app itself is healthy, but the readiness probe additionally checks that each required back-end service is available. This helps you avoid directing traffic to Pods that can only respond with error messages.
+•	By combining liveness and readiness probes, you can instruct Kubernetes to automatically restart pods or remove them from backend groups. If your app has a strict dependency on back-end services, you can implement both liveness and readiness probes.
+•	By default, the probe will stop if the application is not ready after three attempts. In case of a liveness probe, it will restart the container. In the case of a readiness probe, it will mark pods as unhealthy.
+•	In many applications, the /health and /ready endpoints are merged into a single /health endpoint because there is no real difference between their healthy and ready states.
+Demo:
+
+Horizontal Pod Autoscaler in Kubernetes (Part 1) — Simple Autoscaling using Metrics Server
+Learn how to use Metrics Server to horizontally scale native and JVM services in Kubernetes automatically based on resource metrics.
+ 
+Photo by Christian Englmeier on Unsplash
+The Horizontal Pod Autoscaler (HPA) is a fundamental feature of Kubernetes. It enables automatic scale-up and scale-down of containerized applications based on CPU usage, memory usage, or custom metrics.
+Traditionally, when scaling software, we first think of vertical scaling: the CPU and the RAM are increased so the application consuming them can perform better. While this seems like a flawless mechanism on paper, it actually comes with many drawbacks.
+First, upgrading the CPU or RAM on a physical machine (or VM) requires downtime and unless a Pod Disruption Budget (PDB) is used to handle disruptions, all pods will be evicted and recreated in the new resized node.
+Nodes resource usage is also not optimized, as scaling vertically means requiring sufficient resources in a single node, while horizontal scaling may have the same amount of resources distributed across multiple nodes.
+Additionally, vertical scaling is not as resilient as horizontal scaling, as fewer replicas mean higher risks of disruptions in case of node failure.
+Finally, reaching a certain threshold, scaling only vertically becomes very expensive and most importantly, isn’t limitless. In fact, there is only so much CPU and RAM a physical machine(or VM) alone can handle.
+This is where horizontal scaling comes into play!
+Eventually, it is more efficient to duplicate an instance, than increase its resources.
+🎬 Hi there, I’m Jean!
+In this 2 parts series, we’re going to explore several ways to scale services horizontally in Kubernetes, and the first one is…
+🥁
+… using Metrics Server! 🎊
+Requirements
+Before we start, make sure you have the following tools installed:
+•	Kind
+•	Kubectl
+•	Helm
+•	K6
+Note: for MacOS users or Linux users using Homebrew, simply run: brew install kind kubectl helm k6
+All set? Let’s go! 🏁
+Creating Kind Cluster
+Kind is a tool for running local Kubernetes clusters using Docker container “nodes”. It was primarily designed for testing Kubernetes itself, but may be used for local development or CI.
+I don’t expect you to have a demo project in handy, so I built one for you.
+git clone https://github.com/jhandguy/horizontal-pod-autoscaler.gitcd horizontal-pod-autoscaler
+Alright, let’s spin up our Kind cluster! 🚀
+➜ kind create cluster --image kindest/node:v1.23.4 --config=kind/cluster.yamlCreating cluster "kind" ...
+ ✓ Ensuring node image (kindest/node:v1.23.4) 🖼
+ ✓ Preparing nodes 📦
+ ✓ Writing configuration 📜
+ ✓ Starting control-plane 🕹️
+ ✓ Installing CNI 🔌
+ ✓ Installing StorageClass 💾Set kubectl context to "kind-kind"
+You can now use your cluster with:
+
+kubectl cluster-info --context kind-kindHave a question, bug, or feature request? Let us know! https://kind.sigs.k8s.io/#community 🙂
+Installing NGINX Ingress Controller
+NGINX Ingress Controller is one of the many available Kubernetes Ingress Controllers, which acts as a load balancer and satisfies routing rules specified in Ingress resources, using the NGINX reverse proxy.
+NGINX Ingress Controller can be installed via its Helm chart.
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginxhelm install ingress-nginx/ingress-nginx --name-template ingress-nginx --create-namespace -n ingress-nginx --values kind/ingress-nginx-values.yaml --version 4.0.19 --wait
+Now, if everything goes according to plan, you should be able to see the ingress-nginx-controller Deployment running.
+➜ kubectl get deploy -n ingress-nginx
+NAME                       READY   UP-TO-DATE   AVAILABLE   AGE
+ingress-nginx-controller   1/1     1            1           4m35s
+Installing Metrics Server
+Metrics Server is a source of container resource metrics, which collects them from Kubelets and exposes them in Kubernetes API server through Metrics API for use by Horizontal Pod Autoscaler and Vertical Pod Autoscaler.
+Metrics Server can be installed via its Helm chart.
+helm repo add metrics-server https://kubernetes-sigs.github.io/metrics-serverhelm install metrics-server/metrics-server --name-template metrics-server --create-namespace -n metrics-server --values kind/metrics-server-values.yaml --version 3.8.2 --wait
+Now, if everything goes according to plan, you should be able to see the metrics-server Deployment running.
+➜ kubectl get deploy -n metrics-server
+NAME             READY   UP-TO-DATE   AVAILABLE   AGE
+metrics-server   1/1     1            1           38s
+Horizontal Pod Autoscaler
+Before we dive in, let’s quickly remind ourselves of what a Horizontal Pod Autoscaler in Kubernetes actually is:
+A HorizontalPodAutoscaler (HPA for short) automatically updates a workload resource (such as a Deployment or StatefulSet), with the aim of automatically scaling the workload to match demand.
+Horizontal scaling means that the response to increased load is to deploy more Pods. This is different from vertical scaling, which for Kubernetes would mean assigning more resources (for example: memory or CPU) to the Pods that are already running for the workload.
+If the load decreases, and the number of Pods is above the configured minimum, the HorizontalPodAutoscaler instructs the workload resource (the Deployment, StatefulSet, or other similar resource) to scale back down.
+Now that we know what an HPA is, let’s get started, shall we? 🧐
+Autoscaling Native Services based on CPU and Memory Usage
+A native service is a piece of software that does not require a virtual environment in order to run across different OSs and CPU architectures. This is the case for C/C++, Golang, Rust, and more: those are languages that compile into a binary, that is directly executable by the Pod.
+This means that native services can utilize all of the CPU and memory available from the Pod they run in, without an intermediary environment.
+Let’s try it out with a Golang service!
+cd golanghelm install . --name-template sample-app --create-namespace -n sample-app --wait
+If everything goes fine, you should eventually see one Deployment with the READY state.
+➜ kubectl get deploy -n sample-app
+NAME         READY   UP-TO-DATE   AVAILABLE   AGE
+sample-app   2/2     2            2           44s
+Once the Pods are running, Metrics Server will start collecting the Pods resource metrics from the node’s Kubelet and expose them in Kubernetes through Metrics API for use by Horizontal Pod Autoscaler and Vertical Pod Autoscaler.
+Let’s see what the resource usage for those Pods currently is!
+➜ kubectl top pods -n sample-app
+NAME                          CPU(cores)   MEMORY(bytes)
+sample-app-6bcbfc8b49-j6xmq   1m           1Mi
+sample-app-6bcbfc8b49-wtd8g   1m           1Mi
+Pretty low, right? 🤔
+This is obviously expected since our Go service currently isn’t handling any load.
+Alright, now let’s have a look at the HPA!
+➜ kubectl describe hpa -n sample-app
+...
+Metrics: ( current / target )
+  resource memory on pods (as a percentage of request):  8% / 50%
+  resource cpu on pods (as a percentage of request):     10% / 50%
+Min replicas:                                            2
+Max replicas:                                            8
+...
+As you can see, this HPA is configured to scale the service based on both CPU and memory, with average utilization of 50% each.
+This means that as soon as either the CPU or memory utilization breaches the 50% threshold, the HPA will trigger an upscale.
+Under minimal load, the HPA will still retain a replica count of 2, while the maximum amount of Pods the HPA is allowed to spin up under high load is 8.
+Note: in a production environment, it is recommended to have a minimum replica count of at least 3, to guarantee maintained availability in the case of Pod Disruption.
+Now, this is the moment you’ve certainly expected… It’s Load Testing time! 😎
+For Load Testing, I really recommend k6 from the Grafana Labs team. It is a dead-simple yet super powerful tool with very extensive documentation.
+See for yourself!
+cd ..k6 run k6/script.js
+While the load test is running, I suggest watching the HPA in a separate tab.
+kubectl get hpa -n sample-app -w
+As the load test progresses and the 2 starting Pods struggle to handle incoming requests, you should see both CPU and memory targets increasing, and ultimately, the replica count reaching its maximum!
+Deployment/sample-app   16%/50%, 10%/50%   2         8         2
+Deployment/sample-app   16%/50%, 15%/50%   2         8         2
+Deployment/sample-app   17%/50%, 40%/50%   2         8         2
+Deployment/sample-app   18%/50%, 50%/50%   2         8         2
+Deployment/sample-app   19%/50%, 60%/50%   2         8         2
+Deployment/sample-app   22%/50%, 75%/50%   2         8         3
+Deployment/sample-app   27%/50%, 85%/50%   2         8         3
+Deployment/sample-app   24%/50%, 80%/50%   2         8         4
+Deployment/sample-app   27%/50%, 80%/50%   2         8         5
+Deployment/sample-app   22%/50%, 72%/50%   2         8         5
+Deployment/sample-app   23%/50%, 70%/50%   2         8         6
+Deployment/sample-app   25%/50%, 64%/50%   2         8         7
+Deployment/sample-app   24%/50%, 61%/50%   2         8         7
+Deployment/sample-app   25%/50%, 61%/50%   2         8         7
+Deployment/sample-app   27%/50%, 60%/50%   2         8         8
+Deployment/sample-app   28%/50%, 60%/50%   2         8         8
+Deployment/sample-app   27%/50%, 57%/50%   2         8         8
+When relying on multiple targets for a single HPA, you can find out which of those have triggered the up/downscale by consulting Kubernetes events.
+➜ kubectl get events -n sample-app
+...
+New size: 3; reason: cpu resource utilization (percentage of request) above target
+Scaled up replica set sample-app-6bcbfc8b49 to 3
+New size: 4; reason: cpu resource utilization (percentage of request) above target
+Scaled up replica set sample-app-6bcbfc8b49 to 4
+New size: 5; reason: cpu resource utilization (percentage of request) above target
+Scaled up replica set sample-app-6bcbfc8b49 to 5
+New size: 6; reason: cpu resource utilization (percentage of request) above target
+Scaled up replica set sample-app-6bcbfc8b49 to 6
+New size: 7; reason: cpu resource utilization (percentage of request) above target
+Scaled up replica set sample-app-6bcbfc8b49 to 7
+New size: 8; reason: cpu resource utilization (percentage of request) above target
+Scaled up replica set sample-app-6bcbfc8b49 to 8
+...
+Now, let’s quickly have a look at the Load Test summary and the result of the http_req_duration metric in particular!
+          /\      |‾‾| /‾‾/   /‾‾/
+     /\  /  \     |  |/  /   /  /
+    /  \/    \    |     (   /   ‾‾\
+   /          \   |  |\  \ |  (‾)  |
+  / __________ \  |__| \__\ \_____/ .io  execution: local
+     script: k6/script.js
+     output: -scenarios: (100.00%) 1 scenario, 100 max VUs, 5m30s max duration (incl. graceful stop):
+         * default: Up to 100 looping VUs for 5m0s over 2 stages (gracefulRampDown: 30s, gracefulStop: 30s)running (5m01.0s), 000/100 VUs, 20866 complete and 0 interrupted iterations
+default ✓ [======================================] 000/100 VUs  5m0s     ✓ status code is 200
+     ✓ node is kind-control-plane
+     ✓ namespace is sample-app
+     ✓ pod is sample-app-*   ✓ checks.........................: 100.00% ✓ 83464   ✗ 0
+     data_received..................: 4.8 MB  16 kB/s
+     data_sent......................: 2.4 MB  8.0 kB/s
+     http_req_blocked...............: avg=7.7µs   min=1µs   med=4µs    max=1.09ms   p(90)=5µs    p(95)=6µs
+     http_req_connecting............: avg=2.9µs   min=0s    med=0s     max=521µs    p(90)=0s     p(95)=0s
+   ✓ http_req_duration..............: avg=8.18ms  min=812µs med=2.1ms  max=498.85ms p(90)=5.21ms p(95)=62.79ms
+       { expected_response:true }...: avg=8.18ms  min=812µs med=2.1ms  max=498.85ms p(90)=5.21ms p(95)=62.79ms
+     http_req_failed................: 0.00%   ✓ 0       ✗ 20866
+     http_req_receiving.............: avg=41.25µs min=16µs  med=38µs   max=361µs    p(90)=57µs   p(95)=66µs
+     http_req_sending...............: avg=18.84µs min=7µs   med=17µs   max=2.59ms   p(90)=27µs   p(95)=32µs
+     http_req_tls_handshaking.......: avg=0s      min=0s    med=0s     max=0s       p(90)=0s     p(95)=0s
+     http_req_waiting...............: avg=8.12ms  min=774µs med=2.04ms max=498.76ms p(90)=5.15ms p(95)=62.73ms
+     http_reqs......................: 20866   69.3225/s
+     iteration_duration.............: avg=1s      min=1s    med=1s     max=1.49s    p(90)=1s     p(95)=1.06s
+     iterations.....................: 20866   69.3225/s
+     vus............................: 1       min=1     max=100
+     vus_max........................: 100     min=100   max=100
+As you can observe, our Golang service has performed very well under heavy load, with a Success Share of 100%, a median latency of ~2ms, and a 95th percentile latency of ~62ms!
+We have the HPA to thank for that, as it scaled the Deployment from 2 to 8 Pods swiftly and automatically, based on the Pods resource usage!
+We definitely would not have had the same results without an HPA… Actually, why don’t you try it yourself? 😉
+Just delete the HPA (kubectl delete hpa sample-app -n sample-app), run the load test again (k6 run k6/script.js) and see what happens! (spoiler alert: it’s not pretty 😬)
+Once you are done, don’t forget to uninstall the Helm release! (we won’t be needing this one anymore)
+helm uninstall sample-app -n sample-app
+Autoscaling JVM Services based on CPU Usage
+While native services run as executable binaries, JVM services need an extra environment layer in order to run on various OSs and CPU architectures: the Java Virtual Machine (JVM).
+This creates an issue for Pod Autoscaling, as the JVM pre-allocates more memory than it actually needs from the Pod’s resources, for its Garbage Collector (GC). This makes memory altogether an unreliable metric to use for autoscaling a JVM-based service in Kubernetes via Metrics Server.
+Thus, in the case of Java or other JVM-based services, when utilizing Metrics Server for HPA, one can only rely on the CPU metric for autoscaling.
+Let’s experience it with a Kotlin/JVM service!
+cd kotlinhelm install . --name-template sample-app --create-namespace -n sample-app --wait
+If everything goes fine, you should eventually see one Deployment with the READY state.
+➜ kubectl get deploy -n sample-app
+NAME         READY   UP-TO-DATE   AVAILABLE   AGE
+sample-app   2/2     2            2           52s
+Let’s see what the resource usage for those Pods running a JVM currently is!
+➜ kubectl top pods -n sample-app
+NAME                         CPU(cores)   MEMORY(bytes)
+sample-app-8df8cfcd4-lg9s8   7m           105Mi
+sample-app-8df8cfcd4-r9fjh   7m           105Mi
+Interesting! As you can see, while being idle, both pods consume ~100Mi (~104Mb) of memory, which is almost 50% of the Pods memory limit! 😱
+As previously stated, this is due to the JVM pre-allocating memory for its Garbage Collector (GC).
+Alright, now let’s have a look at the HPA!
+➜ kubectl describe hpa -n sample-app
+...
+Metrics: ( current / target )
+  resource cpu on pods (as a percentage of request):  10% / 50%
+Min replicas:                                         2
+Max replicas:                                         8
+...
+As announced, this time the HPA only relies on one resource metric: the CPU.
+Alright, let’s give our favorite Load Testing tool another go! 🚀
+cd ..k6 run k6/script.js
+As previously mentioned, I suggest watching the HPA in a separate tab.
+kubectl get hpa -n sample-app -w
+As the load test progresses and the 2 starting Pods struggle to handle incoming requests, you should see the CPU target increasing, and ultimately, the replica count reaching its maximum!
+Deployment/sample-app   10%/50%   2         8         2
+Deployment/sample-app   15%/50%   2         8         2
+Deployment/sample-app   36%/50%   2         8         2
+Deployment/sample-app   64%/50%   2         8         2
+Deployment/sample-app   37%/50%   2         8         3
+Deployment/sample-app   41%/50%   2         8         3
+Deployment/sample-app   51%/50%   2         8         3
+Deployment/sample-app   99%/50%   2         8         3
+Deployment/sample-app   56%/50%   2         8         6
+Deployment/sample-app   50%/50%   2         8         6
+Deployment/sample-app   76%/50%   2         8         6
+Deployment/sample-app   74%/50%   2         8         8
+Deployment/sample-app   61%/50%   2         8         8
+Deployment/sample-app   58%/50%   2         8         8
+Now, let’s quickly have a look at the Load Test summary and the result of the http_req_duration metric in particular!
+          /\      |‾‾| /‾‾/   /‾‾/
+     /\  /  \     |  |/  /   /  /
+    /  \/    \    |     (   /   ‾‾\
+   /          \   |  |\  \ |  (‾)  |
+  / __________ \  |__| \__\ \_____/ .io  execution: local
+     script: k6/script.js
+     output: -scenarios: (100.00%) 1 scenario, 100 max VUs, 5m30s max duration (incl. graceful stop):
+         * default: Up to 100 looping VUs for 5m0s over 2 stages (gracefulRampDown: 30s, gracefulStop: 30s)running (5m01.0s), 000/100 VUs, 20714 complete and 0 interrupted iterations
+default ✓ [======================================] 000/100 VUs  5m0s     ✓ status code is 200
+     ✓ node is kind-control-plane
+     ✓ namespace is sample-app
+     ✓ pod is sample-app-*   ✓ checks.........................: 100.00% ✓ 82856     ✗ 0
+     data_received..................: 4.6 MB  15 kB/s
+     data_sent......................: 2.4 MB  7.9 kB/s
+     http_req_blocked...............: avg=7.54µs  min=1µs    med=4µs    max=2.82ms p(90)=5µs    p(95)=6µs
+     http_req_connecting............: avg=2.87µs  min=0s     med=0s     max=2.74ms p(90)=0s     p(95)=0s
+   ✓ http_req_duration..............: avg=15.92ms min=1.08ms med=2.8ms  max=2.28s  p(90)=7.23ms p(95)=31.43ms
+       { expected_response:true }...: avg=15.92ms min=1.08ms med=2.8ms  max=2.28s  p(90)=7.23ms p(95)=31.43ms
+     http_req_failed................: 0.00%   ✓ 0         ✗ 20714
+     http_req_receiving.............: avg=43.94µs min=16µs   med=42µs   max=1.07ms p(90)=58µs   p(95)=66µs
+     http_req_sending...............: avg=18.23µs min=6µs    med=17µs   max=805µs  p(90)=24µs   p(95)=29µs
+     http_req_tls_handshaking.......: avg=0s      min=0s     med=0s     max=0s     p(90)=0s     p(95)=0s
+     http_req_waiting...............: avg=15.86ms min=1.05ms med=2.74ms max=2.28s  p(90)=7.18ms p(95)=31.38ms
+     http_reqs......................: 20714   68.817872/s
+     iteration_duration.............: avg=1.01s   min=1s     med=1s     max=3.28s  p(90)=1s     p(95)=1.03s
+     iterations.....................: 20714   68.817872/s
+     vus............................: 2       min=1       max=100
+     vus_max........................: 100     min=100     max=100
+As you can observe, our Kotlin/JVM service has performed very well under heavy load, with a Success Share of 100%, a median latency of ~2ms, and a 95th percentile latency of ~31ms!
+Once again, the HPA was able to scale the Deployment from 2 to 8 Pods swiftly and automatically, based on the Pods CPU usage alone!
+Note: if you keep the Deployment idle for a few minutes, you should see the HPA gradually scaling back down to 2 Pods, due to low CPU usage.
+Wrapping up
+That’s it! You can now stop and delete your Kind cluster.
+kind delete cluster
+To summarize, using Metrics Server we were able to:
+•	Autoscale horizontally our native service written in Golang, based on both CPU and memory usage;
+•	Autoscale horizontally our JVM service written in Kotlin/JVM, based on CPU usage.
+Was it worth it? Did that help you understand how to implement Horizontal Pod Autoscaler in Kubernetes using Metrics Server?
+If so:
+1.	Let me know in the comments below! 👇
+2.	Don’t forget to hit that subscribe button! ✅
+3.	Follow me on Twitter, I’ll be happy to answer any of your questions and you’ll be the first ones to know when a new article comes out! 👌
+See you next month, for Part 2 of my series Horizontal Pod Autoscaler in Kubernetes!
+Bye-bye! 👋
+
+
+How can containers within a pod communicate with each other?
+Answer
+Containers within a pod share networking space and can reach other on localhost. For instance, if you have two containers within a pod, a MySQL container running on port 3306, and a PHP container running on port 80, the PHP container could access the MySQL one through localhost:3306.
+
+
+Explain what is a Master Node and what component does it consist of?
+
+Answer
+
+
+•	The master node is the most vital component responsible for Kubernetes architecture
+•	It is the central controlling unit of Kubernetes and manages workload and communications across the clusters
+The master node has various components, each having its process. They are:
+•	ETCD
+•	Controller Manager
+•	Scheduler
+•	API Server
+ETCD (Cluster store)
+1.	This component stores the configuration details and essential values
+2.	It communicates with all other components to receive the commands and work in order to perform an action
+3.	It also manages network rules and posts forwarding activity
+Controller Manager
+1.	It is responsible for most of the controllers and performs a task
+2.	It is a daemon which runs in a continuous loop and is responsible for collecting and sending information to API server
+3.	The key controllers handle nodes, endpoints, etc.
+Scheduler
+1.	It is one of the key components of the master node associated with the distribution of workload
+2.	The scheduler is responsible for workload utilization and allocating pod to a new node
+3.	The scheduler should have an idea of the total resources available as well as resources allocated to existing workloads on each node
+
+ 
+What are namespaces? What is the problem with using one default namespace?
+
+Answer
+
+
+Namespaces allow you split your cluster into virtual clusters where you can group your applications in a way that makes sense and is completely separated from the other groups (so you can for example create an app with the same name in two different namespaces).
+•	When using the default namespace alone, it becomes hard over time to get an overview of all the applications you manage in your cluster. Namespaces make it easier to organize the applications into groups that makes sense, like a namespace of all the monitoring applications and a namespace for all the security applications, etc.
+•	Namespaces can also be useful for managing Blue/Green environments where each namespace can include a different version of an app and also share resources that are in other namespaces (namespaces like logging, monitoring, etc.).
+•	Another use case for namespaces is one cluster, multiple teams. When multiple teams use the same cluster, they might end up stepping on each others toes. For example if they end up creating an app with the same name it means one of the teams overriden the app of the other team because there can't be too apps in Kubernetes with the same name (in the same namespace).
+
+
+What happens when a master fails? What happens when a worker fails?
+
+Answer
+
+Kubernetes is designed to be resilient to any individual node failure, master or worker. When a master fails the nodes of the cluster will keep operating, but there can be no changes including pod creation or service member changes until the master is available. When a worker fails, the master stops receiving messages from the worker. If the master does not receive status updates from the worker the node will be marked as NotReady. If a node is NotReady for 5 minutes, the master reschedules all pods that were running on the dead node to other available nodes.
+
+What is a StatefulSet in Kubernetes?
+Answer
+
+
+When using Kubernetes, most of the time you don’t care how your pods are scheduled, but sometimes you care that pods are deployed in order, that they have a persistent storage volume, or that they have a unique, stable network identifier across restarts and reschedules. In those cases, StatefulSets can help you accomplish your objective. It manages the deployment and scaling of a set of Pods, and provides guarantees about the ordering and uniqueness of these Pods.
+StatefulSets are valuable for applications that require one or more of the following.
+•	Stable, unique network identifiers.
+•	Stable, persistent storage.
+•	Ordered, graceful deployment and scaling.
+•	Ordered, automated rolling updates.
+
+What is a DaemonSet?
+
+Answer
+
+DaemonSets are used in Kubernetes when you need to run one or more pods on all (or a subset of) the nodes in a cluster. The typical use case for a DaemonSet is logging and monitoring for the hosts. For example, a node needs a service (daemon) that collects health or log data and pushes them to a central system or database.
+As the name suggests you can use daemon sets for running daemons (and other tools) that need to run on all nodes of a cluster. These can be things like cluster storage daemons (e.g. Quobyte, glusterd, ceph, etc.), log collectors (e.g. fluentd or logstash), or monitoring daemons (e.g. Prometheus Node Exporter, collectd, New Relic agent, etc.)
+
+
+Scenario-Based Interview Questions
+This section of questions will consist of various scenario-based questions that you may face in your interviews.
+Scenario 1: Suppose a company built on monolithic architecture handles numerous products. Now, as the company expands in today’s scaling industry, their monolithic architecture started causing problems.
+How do you think the company shifted from monolithic to microservices and deploy their services containers?
+Solution:
+As the company’s goal is to shift from their monolithic application to microservices, they can end up building piece by piece, in parallel and just switch configurations in the background. Then they can put each of these built-in microservices on the Kubernetes platform. So, they can start by migrating their services once or twice and monitor them to make sure everything is running stable. Once they feel everything is going good, then they can migrate the rest of the application into their Kubernetes cluster.
+Scenario 2: Consider a multinational company with a very much distributed system, with a large number of data centers, virtual machines, and many employees working on various tasks.
+How do you think can such a company manage all the tasks in a consistent way with Kubernetes?
+Solution:
+As all of us know that I.T. departments launch thousands of containers, with tasks running across a numerous number of nodes across the world in a distributed system.
+In such a situation the company can use something that offers them agility, scale-out capability, and DevOps practice to the cloud-based applications.
+So, the company can, therefore, use Kubernetes to customize their scheduling architecture and support multiple container formats. This makes it possible for the affinity between container tasks that gives greater efficiency with an extensive support for various container networking solutions and container storage.
+Scenario 3: Consider a situation, where a company wants to increase its efficiency and the speed of its technical operations by maintaining minimal costs.
+DevOps Training
+
+DEVOPS CERTIFICATION TRAINING COURSE
+DevOps Certification Training CourseReviews
+ 5(128688)
+
+AWS DEVOPS ENGINEER CERTIFICATION TRAINING COURSE
+AWS DevOps Engineer Certification Training CourseReviews
+ 5(6465)
+
+KUBERNETES CERTIFICATION TRAINING COURSE: ADMINISTRATOR (CKA)
+Kubernetes Certification Training Course: Administrator (CKA)Reviews
+ 5(9297)
+
+DOCKER CERTIFICATION TRAINING COURSE
+Docker Certification Training CourseReviews
+ 5(6556)
+
+GIT CERTIFICATION TRAINING
+Git Certification TrainingReviews
+ 5(4340)
+
+ANSIBLE CERTIFICATION TRAINING COURSE
+Ansible Certification Training CourseReviews
+ 5(334)
+
+JENKINS CERTIFICATION TRAINING COURSE
+Jenkins Certification Training CourseReviews
+ 5(8622)
+Next
+How do you think the company will try to achieve this?
+Solution:
+The company can implement the DevOps methodology, by building a CI/CD pipeline, but one problem that may occur here is the configurations may take time to go up and running. So, after implementing the CI/CD pipeline the company’s next step should be to work in the cloud environment. Once they start working on the cloud environment, they can schedule containers on a cluster and can orchestrate with the help of Kubernetes. This kind of approach will help the company reduce their deployment time, and also get faster across various environments.
+Scenario 4:  Suppose a company wants to revise it’s deployment methods and wants to build a platform which is much more scalable and responsive.
+How do you think this company can achieve this to satisfy their customers?
+Solution:
+In order to give millions of clients the digital experience they would expect, the company needs a platform that is scalable, and responsive, so that they could quickly get data to the client website. Now, to do this the company should move from their private data centers (if they are using any) to any cloud environment such as AWS. Not only this, but they should also implement the microservice architecture so that they can start using Docker containers. Once they have the base framework ready, then they can start using the best orchestration platform available i.e. Kubernetes. This would enable the teams to be autonomous in building applications and delivering them very quickly.
+Scenario 5: Consider a multinational company with a very much distributed system, looking forward to solving the monolithic code base problem.
+How do you think the company can solve their problem?
+Solution
+Well, to solve the problem, they can shift their monolithic code base to a microservice design and then each and every microservices can be considered as a container. So, all these containers can be deployed and orchestrated with the help of Kubernetes.
+Want to get Kubernetes Certified? View Batches Now
+Kubernetes Interview Questions
+Scenario 6: All of us know that the shift from monolithic to microservices solves the problem from the development side, but increases the problem at the deployment side.
+How can the company solve the problem on the deployment side?
+Solution
+The team can experiment with container orchestration platforms, such as Kubernetes and run it in data centers. So, with this, the company can generate a templated application, deploy it within five minutes, and have actual instances containerized in the staging environment at that point. This kind of Kubernetes project will have dozens of microservices running in parallel to improve the production rate as even if a node goes down, then it can be rescheduled immediately without performance impact.
+Scenario 7:  Suppose a company wants to optimize the distribution of its workloads, by adopting new technologies.
+How can the company achieve this distribution of resources efficiently?
+Solution
+The solution to this problem is none other than Kubernetes. Kubernetes makes sure that the resources are optimized efficiently, and only those resources are used which are needed by that particular application. So, with the usage of the best container orchestration tool, the company can achieve the distribution of resources efficiently.
+Scenario 8: Consider a carpooling company wants to increase their number of servers by simultaneously scaling their platform.
+How do you think will the company deal with the servers and their installation?
+Solution
+The company can adopt the concept of containerization. Once they deploy all their application into containers, they can use Kubernetes for orchestration and use container monitoring tools like Prometheus to monitor the actions in containers. So, with such usage of containers, giving them better capacity planning in the data center because they will now have fewer constraints due to this abstraction between the services and the hardware they run on.
+Scenario 9: Consider a scenario where a company wants to provide all the required hand-outs to its customers having various environments.
+How do you think they can achieve this critical target in a dynamic manner?
+Solution
+The company can use Docker environments, to put together a cross-sectional team to build a web application using Kubernetes. This kind of framework will help the company achieve the goal of getting the required things into production within the shortest time frame. So, with such a machine running, the company can give the hands-outs to all the customers having various environments.
+Scenario 10: Suppose a company wants to run various workloads on different cloud infrastructure from bare metal to a public cloud.
+How will the company achieve this in the presence of different interfaces?
+Solution
+The company can decompose its infrastructure into microservices and then adopt Kubernetes. This will let the company run various workloads on different cloud infrastructures.
+
+
+What is the difference between config map and secret? (Differentiate the answers as with examples)
+
+Config maps ideally stores application configuration in a plain text format whereas Secrets store sensitive data like password in an encrypted format. Both config maps and secrets can be used as volume and mounted inside a pod through a pod definition file.
+Config map:
+                 kubectl create configmap myconfigmap
+ --from-literal=env=dev
+Secret:
+echo -n ‘admin’ > ./username.txt
+echo -n ‘abcd1234’ ./password.txt
+kubectl create secret generic mysecret --from-file=./username.txt --from-file=./password.txt
+
+
+If a node is tainted, is there a way to still schedule the pods to that node?
+
+When a node is tainted, the pods don't get scheduled by default, however, if we have to still schedule a pod to a tainted node we can start applying tolerations to the pod spec.
+Apply a taint to a node:
+kubectl taint nodes node1 key=value:NoSchedule
+Apply toleration to a pod:
+spec:
+tolerations:
+- key: "key"
+operator: "Equal"
+value: "value"
+effect: "NoSchedule"
+
+
+Can we use many claims out of a persistent volume? Explain?
+
+The mapping between persistentVolume and persistentVolumeClaim is always one to one. Even When you delete the claim, PersistentVolume still remains as we set persistentVolumeReclaimPolicy is set to Retain and It will not be reused by any other claims. Below is the spec to create the Persistent Volume.
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+name: mypv
+spec:
+capacity:
+storage: 5Gi
+volumeMode: Filesystem
+accessModes:
+- ReadWriteOnce
+persistentVolumeReclaimPolicy: Retain
+
+
+What kind of object do you create, when your dashboard like application, queries the Kubernetes API to get some data?
+
+You should be creating serviceAccount. A service account creates a token and tokens are stored inside a secret object. By default Kubernetes automatically mounts the default service account. However, we can disable this property by setting automountServiceAccountToken: false in our spec. Also, note each namespace will have a service account
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+name: my-sa
+automountServiceAccountToken: false
+
+
+What is the difference between a Pod and a Job? Differentiate the answers as with examples)
+
+A Pod always ensure that a container is running whereas the Job ensures that the pods run to its completion. Job is to do a finite task.
+Examples:
+kubectl run mypod1 --image=nginx --restart=Never
+kubectl run mypod2 --image=nginx --restart=onFailure
+○ → kubectl get pods
+NAME           READY STATUS   RESTARTS AGE
+mypod1         1/1 Running   0 59s
+○ → kubectl get job
+NAME     DESIRED SUCCESSFUL   AGE
+mypod1   1 0            19s
+
+
+How do you deploy a feature with zero downtime in Kubernetes?
+
+By default Deployment in Kubernetes using RollingUpdate as a strategy. Let's say we have an example that creates a deployment in Kubernetes
+kubectl run nginx --image=nginx # creates a deployment
+○ → kubectl get deploy
+NAME    DESIRED  CURRENT UP-TO-DATE   AVAILABLE AGE
+nginx   1  1 1            0 7s
+Now let’s assume we are going to update the nginx image
+kubectl set image deployment nginx nginx=nginx:1.15 # updates the image 
+Now when we check the replica sets
+kubectl get replicasets # get replica sets
+NAME               DESIRED CURRENT READY   AGE
+nginx-65899c769f   0 0 0       7m
+nginx-6c9655f5bb   1 1 1       13s
+From the above, we can notice that one more replica set was added and then the other replica set was brought down
+kubectl rollout status deployment nginx 
+# check the status of a deployment rollout
+kubectl rollout history deployment nginx
+ # check the revisions in a deployment
+○ → kubectl rollout history deployment nginx
+deployment.extensions/nginx
+REVISION  CHANGE-CAUSE
+1         <none>
+2         <none>
+
+
+How to monitor that a Pod is always running?
+
+We can introduce probes. A liveness probe with a Pod is ideal in this scenario.
+A liveness probe always checks if an application in a pod is running,  if this check fails the container gets restarted. This is ideal in many scenarios where the container is running but somehow the application inside a container crashes.
+spec:
+containers:
+- name: liveness
+image: k8s.gcr.io/liveness
+args:
+- /server
+livenessProbe:
+      httpGet:
+        path: /healthz
+
+
+Having a Pod with two containers, can I ping each other? like using the container name?
+
+Containers on same pod act as if they are on the same machine. You can ping them using localhost:port itself. Every container in a pod shares the same IP. You can `ping localhost` inside a pod. Two containers in the same pod share an IP and a network namespace and They are both localhost to each other. Discovery works like this: Component A's pods -> Service Of Component B -> Component B's pods and Services have domain names servicename.namespace.svc.cluster.local, the dns search path of pods by default includes that stuff, so a pod in namespace Foo can find a Service bar in same namespace Foo by connecting to `bar`
+
+
+Does the rolling update with state full set replicas =1 makes sense?
+
+No, because there is only 1 replica, any changes to state full set would result in an outage. So rolling update of a StatefulSet would need to tear down one (or more) old pods before replacing them. In case 2 replicas, a rolling update will create the second pod, which it will not be succeeded, the PD is locked by first (old) running pod, the rolling update is not deleting the first pod in time to release the lock on the PDisk in time for the second pod to use it. If there's only one that rolling update goes 1 -> 0 -> 1.f the app can run with multiple identical instances concurrently, use a Deployment and roll 1 -> 2 -> 1 instead.
+
+Different Ways to provide API-Security on Kubernetes?
+
+Use the correct auth mode with API server authorization-mode=Node,RBAC Ensure all traffic is protected by TLS Use API authentication (smaller cluster may use certificates but larger multi-tenants may want an AD or some OIDC authentication).
+Make kubeless protect its API via authorization-mode=Webhook. Make sure the kube-dashboard uses a restrictive RBAC role policy Monitor RBAC failures Remove default ServiceAccount permissions Filter egress to Cloud API metadata APIs Filter out all traffic coming into kube-system namespace except DNS.
+A default deny policy on all inbound on all namespaces is good practice. You explicitly allow per deployment.Use a podsecurity policy to have container restrictions and protect the Node Keep kube at the latest version.
+
+
+what does kube-proxy do?
+
+kube-proxy does 2 things
+•	for every Service, open a random port on the node and proxy that port to the Service.
+•	install and maintain iptables rules which capture accesses to a virtual ip:port and redirect those to the port in (1)
+The kube-proxy is a component that manages host sub-netting and makes services available to other components.Kubeproxy handles network communication and shutting down master does not stop a node from serving the traffic and kubeproxy works, in the same way, using a service. The iptables will route the connection to kubeproxy, which will then proxy to one of the pods in the service.kube-proxy translate the destination address to whatever is in the endpoints.
+
+
+What runs inside the kubernetes worker nodes?
+
+Container Runtime
+•	Kubelet
+•	kube-proxy
+Kubernetes Worker node is a machine where workloads get deployed. The workloads are in the form of containerised applications and because of that, every node in the cluster must run the container run time such as docker in order to run those workloads. You can have multiple masters mapped to multiple worker nodes or a single master having a single worker node. Also, the worker nodes are not gossiping or doing leader election or anything that would lead to odd-quantities. The role of the container run time is to start and managed containers. The kubelet is responsible for running the state of each node and it receives commands and works to do from the master. It also does the health check of the nodes and make sure they are healthy. Kubelet is also responsible for metric collectins of pods as well. The kube-proxy is a component that manages host subnetting and makes services available to other components.
+
+
+Is there a way to make a pod to automatically come up when the host restarts?
+
+Yes using replication controller but it may reschedule to another host if you have multiple nodes in the cluster
+A replication controller is a supervisor for long-running pods. An RC will launch a specified number of pods called replicas and makes sure that they keep running. Replication Controller only supports the simple map-style `label: value` selectors. Also, Replication Controller and ReplicaSet aren't very different. You could think of ReplicaSet as Replication Controller. The only thing that is different today is the selector format. If pods are managed by a replication controller or replication set you can kill the pods and they'll be restarted automatically. The yaml definition is as given below:
+•	apiVersion: v1
+•	kind: ReplicationController
+•	metadata:
+•	name: test
+•	spec:
+•	replicas: 3
+•	selector:
+•	app: test
+•	template:
+•	metadata:
+•	name: test
+•	labels:
+•	app: test
+•	spec:
+•	containers:
+•	name: test
+•	image: image/test
+•	ports:
+•	containerPort: 80
+
+Is there any other way to update configmap for deployment without pod restarts?
+
+well you need to have some way of triggering the reload. ether do a check every minute or have a reload endpoint for an api or project the configmap as a volume, could use inotify to be aware of the change. Depends on how the configmap is consumed by the container. If env vars, then no. If a volumeMount, then the file is updated in the container ready to be consumed by the service but it needs to reload the file
+The container does not restart. if the configmap is mounted as a volume it is updated dynamically. if it is an environment variable it stays as the old value until the container is restarted.volume mount the configmap into the pod, the projected file is updated periodically. NOT realtime. then have the app recognise if the config on disk has changed and reload
+
+Do rolling updates declared with a deployment take effect if I manually delete pods of the replica set with kubectl delete pods or with the dashboard? Will the minimum required a number of pods be maintained?
+
+Yes, the scheduler will make sure (as long as you have the correct resources) that the number of desired pods are met. If you delete a pod, it will recreate it. Also deleting a service won't delete the Replica set. if you remove Service or deployment you want to remove all resources which Service created. Also having a single replica for a deployment is usually not recommended because you cannot scale out and are treating in a specific way
+Any app should be `Ingress` -> `Service` -> `Deployment` -> (volume mount or 3rd-party cloud storage)
+You can skip ingress and just have `LoadBalancer (service)` -> `Deployment` (or Pod but they don't auto restart, deployments do)
+
+
+what is the difference between externalIP and loadBalancerIP ?
+
+loadBalancerIP is not a core Kubernetes concept, you need to have a cloud provider or controller like metallb set up the loadbalancer IP. When MetalLB sees a Service of type=LoadBalancer with a ClusterIP created, MetalLB allocates an IP from its pool and assigns it as that Service's External LoadBalanced IP.the externalIP, on the other hand, is set up by kubelet so that any traffic that is sent to any node with that externalIP as the final destination will get routed.`ExternalIP` assumes you already have control over said IP and that you have correctly arranged for traffic to that IP to eventually land at one or more of your cluster nodes and its is a tool for implementing your own load-balancing. Also you shouldn't use it on cloud platforms like GKE, you want to set `spec.loadBalancerIP` to the IP you preallocated. When you try to create the service using .`loadBalancerIP` instead of `externalIP`, it doesn't create the ephemeral port and the external IP address goes to `<pending>` and never updates.
+
+
+In  Kubernetes - A Pod is running 2 containers, when One container stops - another Container is still running, on this event, I want to terminate this Pod?
+
+You need to add a liveness and readiness probe to query each container,  if the probe fails, the entire pod will be restarted .add liveness object that calls any api that returns 200 to you from another container and both liveness and readiness probes run in infinite loops for example, If X depended to Y So add liveness  in X that check the health of Y.Both readiness/liveness probes always have to run after the container has been started .kubelet component performs the liveness/readiness checks and set initialDelaySeconds and it can be anything from a few seconds to a few minutes depending on app start time. Below is the configuration spec
+•	livenessProbe spec:
+•	livenessProbe:
+•	httpGet:
+•	path: /path/test/
+•	port: 10000
+•	initialDelaySeconds: 30
+•	timeoutSeconds: 5
+•	readinessProbe spec:
+•	readinessProbe:
+•	httpGet:
+•	path: /path/test/
+•	port: 10000
+•	initialDelaySeconds: 30
+•	timeoutSeconds: 5
+
+
+what is the ingress, is it something that runs as a pod or on a pod?
+
+An ingress is an object that holds a set of rules for an ingress controller, which is essentially a reverse proxy and is used to (in the case of nginx-ingress for example) render a configuration file. It allows access to your Kubernetes services from outside the Kubernetes cluster. It holds a set of rules. An Ingress Controller is a controller. Typically deployed as a Kubernetes Deployment. That deployment runs a reverse proxy, the ingress part, and a reconciler, the controller part. the reconciler configures the reverse proxy according to the rules in the ingress object. Ingress controllers watch the k8s api and update their config on changes. The rules help to pass to a controller that is listening for them. You can deploy a bunch of ingress rules, but nothing will happen unless you have a controller that can process them.
+LoadBalancer service -> Ingress controller pods -> App service (via ingress) -> App pods
+
+
+What happens if  daemonset can be set to listen on a specific interface since the Anycast IP will be assigned to a network interface alias
+
+Yes, hostnetwork for the daemonset gets you to the host, so an interface with an Anycast IP should work. You'll have to proxy the data through the daemonset.Daemonset allows you to run the pod on the host network, so anycast is possible.Daemonset allows us to run the pod on the host network At the risk of being pedantic, any pod can be specified to run on the host network.  The only thing special about DaemonSet is you get one pod per host. Most of the issues with respect to IP space is solved by daemonsets. As kube-proxy is run as daemonset, the node has to be Ready for the kube-proxy daemonset to be up.
+
+
+How to forward port `8080 (container) -> 8080 (service) -> 8080 (ingress) -> 80 (browser)` how is it done?
+
+The ingress is exposing port 80 externally for the browser to access, and connecting to a service that listens on 8080. The ingress will listen on port 80 by default. An "ingress controller" is a pod that receives external traffic and handles the ingress  and is configured by an ingress resource For this you need to configure ingress selector and if no 'ingress controller selector' is specified then no ingress controller will control the ingress.
+simple ingress Config will look like
+•	host: abc.org
+•	http:
+•	paths:
+•	backend:
+•	serviceName: abc-service
+•	servicePort: 8080
+•	Then the service will look like
+•	kind: Service
+•	apiVersion: v1
+•	metadata:
+•	name: abc-service
+•	spec:
+•	ports:
+•	protocol: TCP
+•	port: 8080 # this is the port the service listens on
+•	targetPort: 8080
+
+
+Are deployments with more than one replica automatically doing rolling updates when a new deployment config is applied?
+
+The Deployment updates Pods in a rolling update fashion when .spec.strategy.type==RollingUpdate .You can specify maxUnavailable and maxSurge to control the rolling update process. Rolling update is the default deployment strategy.kubectl rolling-update updates Pods and ReplicationControllers in a similar fashion. But, Deployments are recommended, since they are declarative, and have additional features, such as rolling back to any previous revision even after the rolling update is done.So for rolling updates to work as one may expect, a readiness probe is essential. Redeploying deployments is easy but rolling updates will do it nicely for me without any downtime. The way to make a  rolling update of a Deployment and kubctl apply on it is as below
+•	spec:
+•	minReadySeconds: 180
+•	replicas: 9
+•	revisionHistoryLimit: 20
+•	selector:
+•	matchLabels:
+•	deployment: standard
+•	name: standard-pod
+•	strategy:
+•	rollingUpdate:
+•	maxSurge: 1
+•	maxUnavailable: 1
+•	type: RollingUpdate
+
+
+If you have multiple containers in a Deployment file, does use the HorizontalPodAutoscaler scale all of the containers?
+
+Yes, it would scale all of them, internally the deployment creates a replica set (which does the scaling), and then a set number of pods are made by that replica set. the pod is what actually holds both of those containers. and if you want to scale them independently they should be separate pods (and therefore replica sets, deployments, etc).so for hpa to work You need to specify min and max replicas  and the threshold what percentage of cpu and memory you want your pods to autoscale..without having the manually run kubectl autoscale deployment ,you can use the below yaml file to do the same 
+•	apiVersion: autoscaling/v1
+•	kind: HorizontalPodAutoscaler
+•	metadata:
+•	annotations:
+•	name: app
+•	spec:
+•	maxReplicas: 15
+•	minReplicas: 10
+•	scaleTargetRef:
+•	apiVersion: autoscaling/v1
+•	kind: Deployment
+•	name: app targetCPUUtilizationPercentage: 70
+
+
+Suppose you have to use database with your application but well, if you make a database container-based deployment. how would the data persist?
+
+Deployments are for stateless services, you want to use a StatefulSet or just define 3+ pods without a replication controller at all. If you care about stable pod names and volumes, you should go for StatefulSet.Using statefulsets you can maintain which pod is attached to which disk.StatefulSets make vanilla k8s capable of keeping Pod state (things like IPs, etc) which makes it easy to run clustered databases. A stateful set is a controller that orchestrates pods for the desired state. StatefulSets formerly known as PetSets will help for the database if hosting your own. Essentially StatefulSet is for dealing with applications that inherently don't care about what node they run on, but need unique storage/state.
+
+
+If a pod exceeds its memory "limit" what signal is sent to the process?
+
+SIGKILL as immediately terminates the container and spawns a new one with OOM error. The OS, if using a cgroup based containerisation (docker, rkt, etc), will do the OOM killing. Kubernetes simply sets the cgroup limits but is not ultimately responsible for killing the processes.`SIGTERM` is sent to PID 1 and k8s waits for (default of 30 seconds) `terminationGracePeriodSeconds` before sending the `SIGKILL` or you can change that time with terminationGracePeriodSeconds in the pod. As long as your container will eventually exit, it should be fine to have a long grace period. If you want a graceful restart it would have to do it inside the pod. If you don't want it killed, then you shouldn't set a memory `limit` on the pod and there's not a way to disable it for the whole node. Also, when the liveness probe fails, the container will SIGTERM and SIGKILL after some grace period.
+
+
+What is a multinode cluster and single-node cluster in Kubernetes? 
+Ans: When the controller program and the container node are running on the same machine or on the same operating system then it is called a single-node cluster MultiNodeCluster-when the controller program of k8s in running on the one machine (masternode) and the container is running on the different container host machine (workernode).
+
+How and where is Reverse Proxy used in Kubernetes?
+Ans:  'service' kind of resource will actually make use of loadbalancing and reverse proxy in k8s. This program will actually acts like the client for backend PODs and forwards the requests from actual end users to backend and then gives the response to end users as soon as it gets the response from backend servers. 
+
+28. What are the different types of services in Kubernetes? 
+Ans: 
+There are particularly 3 main services in k8s. They are: 1) Cluster IP 2) Node IP 3) External (Literally, we call it as load balancer) Cluster IP is the default load balancer in k8s. The drawback is that any node within the cluster can connect to LB but from outside no one can connect. In Node port type, LB has access to outside world or even internet. If you had created PODs in your k8s, and want to have the load balancer with them then we need to connect to ELB of 3rd party like AWS.
+
+How does the NodePort service work? 
+Ans: Node port works on the logic of doing the reverse proxy two times. Assume that k8s is running on minikube and try to randomly assume any empty port as 30k.Now in the yaml file you need to mention node port as 30k. What exactly happens is if anyone tries to connect the minikube ip with 30k as port then the node port program will does reverse proxy to the actual loadbalancer 'service' Again load balancer will internally do reverse proxy from the requests (That is coming from node port program) to the pods. In this way, because we are doing two times reverse proxy hence we are able to make our PODs or LB's to have internet access. 
+
+31. What is the difference between port, target port and Nodeport? 
+A’ns: target port' is the port number at which our application inside POD is running. 'port' is the port number(on load balancer 'service') at which our load balancer receives the request from clients and then forwards them to the backend. 'node port' is the port on the container host level that helps for giving access to the LB 'service' to internet world. Because of this port node identifies it as a request to actual load balancer
+
+What are PVC, PV and SC in kubernetes? 
+ANS: User can assign PVC as per their requirement however in order to access storage class, PV act as API for that. PV --> A PersistentVolume (PV) is a piece of storage in the cluster that has been provisioned by an administrator. It is a resource in the cluster just like a node is a cluster resource. PVs are volume plugins like Volumes but have a lifecycle independent of any individual pod that uses the PV. This API object captures the details of the implementation of the storage, be that NFS, iSCSI, or a cloud-provider-specific storage system. PVC --> A PersistentVolumeClaim (PVC) is a request for storage by a user. It is similar to a pod. Pods consume node resources and PVCs consume PV resources. Pods can request specific levels of resources (CPU and Memory). Claims can request specific size and access modes (e.g., can be mounted once read/write or many times read-only). SC --> A StorageClass provides a way for administrators to describe the "classes" of storage th
+
+
+
+
+
+
+
+
+What’s a VPC and Why is it Useful?
+Amazon Virtual Private Cloud (VPC) is a “virtual networking environment, including placement, connectivity, and security”. In other words, a VPC is an isolated network where a set of connected instances (e.g. servers, computers, etc.) live. VPC allows you to control:
+•	How instances within the VPC communicate with each other and outside networks, like the internet
+•	The “language” or network protocol by which instances communicate
+•	Which subset of instances can connect to other networks
+These properties are useful when you want to segment your network. For instance, you could have a “public” segment of your VPC where your web servers live. Within this public network, you could control what protocols these instances accept from other networks. Likewise, you could have a “private” network where backend instances live. These backend servers could be more locked down than the public instances and not easily accessible if at all via the internet.
+VPC Concepts You Need to Know
+ 
+VPC Concept Map
+The above figure contains a concept map of major VPC concepts. We’ll define these concepts in short detail below followed by an example of each.
+Region
+A region is a location on the global map where a VPC can exist.
+The regionus-west-1 resides in Northern California, whereas us-east-1 is in North Virginia. See this article for advice on selecting a region for your VPC.
+Availability Zones (AZs)
+An AZ is “multiple, isolated locations within each Region”. In other words, AZs are isolated are data centers within a region. Having resources spread across multiple AZs allows for fault tolerance via redundancy for your AWS services.
+Available AZs for region us-west-1 are us-west-1a and us-west-1c. To see all available AZs for your region, run the command aws ec2 describe-availability-zones
+Subnets
+Subnets are IP address spaces within a VPC that instances can use. Subnets can only span one AZ.
+You can think of a subnet like a zip code. A zip code has a range of addresses (i.e. CIDR range, e.g. 10.0.1.0/24) that locations like homes, offices, etc. (e.g. an address for a host within this range could be 10.0.1.0) can have. The available IP addresses for a subnet with CIDR range 10.0.1.0/24 is 10.0.1.0 through 10.0.1.255.
+Gateways
+Gateways allow instances to communicate with instances, computers or servers outside of the VPC.
+For example, an internet gateway can directly connect traffic between your instances to the internet. A network address translation (NAT) gateway can also route traffic between your instances and the internet, however, your instances are not publicly accessible.
+See this article for a detailed list of difference between an internet and NAT gateway.
+Route Tables
+A route table contains outbound traffic rules for a given subnet.
+Consider the following route table:
+ 
+Example Route Table
+The first rule states that traffic destined for CIDR range 10.0.0.0/16 will route to the local VPC. The second rule states that all other traffic, e.g. 0.0.0.0/0, will route to the internet gateway.
+Network Access Control Lists (NACLs)
+A NACL is a firewall for a given subnet. Using a NACL, one can limit the inbound and outbound traffic to and from instance ports as well as the network protocols that each instance receive/sends.
+For instance, you can have an inbound rule that limits only HTTP traffic to port 80. Another rule could limit SSH access to port 22 and for only a given IP range.
+Tutorial
+ 
+Tutorial VPC Configuration
+We’ll setup a VPC with a public and private subnet according to above figure. We’ll also include NACLs (not pictured) for each subnet.
+1.	Configure your AWS client. If you haven’t already configured your AWS client, see the index of this series for a detailed explanation on how to do this.
+2.	Start by creating the following directory structure:
+
+
