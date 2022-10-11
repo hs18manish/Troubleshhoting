@@ -1,0 +1,152 @@
+SRE/DevOps-Troubleshooting
+
+https://awstip.com/sre-devops-interview-questions-linux-troubleshooting-extended-c12cb5ded3b0
+
+Linux Troubleshooting
+
+2. What happens when you type ls on terminal
+These type of questions are used to understand interviewee attention to details and depth of Linux Internals . Basically the interviewer wants to know if you under forks() and exec() system calls.
+the shell reads what you typed using the getline() function and function called strtok() which took the line to tokenize. Shell also check if the 1st token ls is a Shell alias or not. If it’s not a built-in function, shell will find the PATH variable in the directory. Since it holds the absolute paths for all the executable binary files. Once it finds the binary for ls , the program is loaded in memory and a system call fork() is made. This creates a child process as ls and the shell will be the parent process. The fork() returns 0 to the child process so it knows it has to act as a child and returns PID of the child to the parent process(i.e. the shell).
+Next, the ls process executes the system call execve() that will give it a brand new address space with the program that it has to run. Now, the ls can start running its program. The ls utility uses a function to read the directories and files from the disk by consulting the underlying filesystem’s inode entries.
+Once ls process is done executing, it will call the _exit() system call with an integer 0 that denotes a normal execution and the kernel will free up its resources.
+Note: you can use strace ls to dig deeper into the system calls
+3. Explain Linux Inodes
+An Inode number points to an Inode. An Inode is a data structure that stores the information about the file or folder
+Detailed Answer is available here
+4. Crash vs Panic
+Crash usually happens when a trap occurs when the application trying to access memory incorrectly. Panic usually when the application kill/shutdown itself abruptly. Main difference between crash and panic is that crash is hardware or OS initiated and panic usually imitated by application by calling abort() function. Some applications use a special function called a signal handler to generate information about the trap other can use gdb to collection information about the same.
+Most common bad programming signals are SIGSEGV , SIGBUS and SIGILL usually caused by bad memory management, a bad pointer, uninitialized values or memory corruption.
+5. Explain the /proc filesystem
+/proc is very special in that it is also a virtual filesystem. It’s sometimes referred to as a process information pseudo-file system. It doesn’t contain ‘real’ files but runtime system information. Lot of system utilities are simply calls to files in this directory
+/proc file system has the pid for the process running. if you do cd /procs/self you will see al lot file and there size is 0 however you will see that they do contain information
+/maps provides information about the memory address space of the process
+/cmdline contains the arguments for the commandline
+/environ provides information about the process' current environment
+/fd contains symbolic link pointing to each file for which the process currently has file descriptor
+/proc/locks shows all the locks on currently exist in the system
+/proc/sys/fs contains some useful information like file-nr which tells you the number of open files and available on the system
+/proc/sys/vm holds files and information to tune virtual memory
+6. When I get a “filesystem is full” error, but “df” shows there is free space
+Check if you see zero IFree by using df -i . If that is not the case then see if deleted files are still in use using lsof and restart those processes
+7. What are the performance tools you would use on Linux Machine
+uptime dmesg | tail vmstat 1 mpstat -P ALL 1 pidstat 1 iostat -xz 1 free -m sar -n DEV 1 sar -n TCP,ETCP 1 top
+Detailed Answer is available here
+8. Explain Linux FileSystem
+Interviewer wants to know how much you understand about linux filesystems. A specific type of data storage format, such as EXT3, EXT4, BTRFS, XFS, and so on. Linux supports almost 100 types of filesystems.
+Detailed Answer is available here
+9. Explain Kernel Space and User Space
+This can be a rabbit hole question, Interviewer can go as deep as possible to see what are your limits. This is also the most interesting topic about Linux that how the control flows from User Space to Kernel Space and why that is important. Why can’t we directly access the Kernel Space. What are use internal libraries like libc and why we need system call
+Detailed Answer is available here
+10. How would you troubleshoot a High I/O Issue
+Detail Answer is available here
+11. What are processes and threads?
+Process are basically the programs which are dispatched from the ready state and are scheduled in the CPU for execution. PCB(Process Control Block) holds the concept of process. A process can create other processes which are known as Child Processes. The process takes more time to terminate and it is isolated means it does not share the memory with any other process.
+Detailed Answer is available here
+12. Explain Kernel Memory Management
+This is not a trivial question. It is very deep and convoluted. So I would hope that interviewer will only be trying to see if you understand the basics around the Kernel Memory Management
+Detailed Answer is available here
+13. Explain Processes and threads ?
+Detailed Answer is available here
+14. Explain different type of task status ?
+Detailed Answer is available here
+15. Explain Linux Concurrency and Race Conditions ?
+Detailed Answer is available here
+16. Explain STACK and HEAP in Operating System ?
+Detailed Answer is available here
+17. Explain Memory Leak ?
+Naive definition: Failure to release unreachable memory, which can no longer be allocated again by any process during execution of the allocating process. This can mostly be cured by using GC (Garbage Collection) techniques or detected by automated tools.
+Subtle definition: Failure to release reachable memory which is no longer needed for your program to function correctly. This is nearly impossible to detect with automated tools or by programmers who are not familiar with the code. While technically it is not a leak, it has the same implications as the naive one. This is not my own idea only. You can come across projects that are written in a garbage collected language but still mention fixing memory leaks in their changelogs.
+18. How does Linux handles Interrupts ?
+Detailed Answer is available here
+19. Explain Load Average ?
+The best definition and internals about load average can be is explained here. I would encourage everybody to go though this website for more deeper understanding about internals
+20. What happens when you try to curl to website ?
+This is very famous question and comes to life every now and then. However I would think that we all should be aware of the internal process flow when you do curl www.google.com . Once the best detailed explanation I found is here. One can certainly argue that this way too much detail but hey no harm in knowing things completely, you may not say this whole thing when asked but one should certainly know about it
+
+Question: There is a service running on a system and you have been told that the service is not running properly. How would you troubleshoot?
+Answer: After verifying the DNS and other things, I would try to SSH to the system and try to see what is going on
+Follow Question: You get an error message like the below:
+ssh: connect to host example.com port 22: Resource temporarily unavailable
+however you did find out that you have IPMI access to the machine, so you can use that to login and you get something like this:
+root@example.com#
+Follow up Answer: So now I will try to run some basic commands to see what is going on like top , ps etc
+Follow Question: You still get a similar error for any command you run:
+fork: retry: Resource temporarily unavailable
+Note: Now you might already know what is the issue, at least have some idea about it. It is related to Resource being exhausted may be files, processes etc etc and you figured that you can’t run any command (specifically any external command, which needs forking).
+Actual Question: How would you troubleshoot a linux box, given none of the external commands executes?
+Facts: What should we do ? Use commands which are internal or built-in to the shell .
+So how to find what commands are built-in and can be useful to you for troubleshooting ? Also if external commands are not available then how to gather information about the system (top, ps, lsof….even cat is not available )…..🤔
+→ /proc filesystem and couple of built-in like read and for
+Type help in the shell and it will give you all the commands which are in-build to the shell
+Read about /proc filesystem in my previous blog SRE/DevOps Interview Questions — Linux Troubleshooting and also here
+Apparently, all the information coming from commands like ps , lsof , vmstat etc etc can be found in /proc file system if you look at the right file.
+For example cmdline file tells you about the last command ran on the system, fd directory contains all the file descriptors and all the folder with numbers are the PIDs running on the system.
+So assuming system has too many files open and all resources are exhausted, how to see if which pid is using how many file without using external commands
+for fd in /proc/[0-9]*/fd/*; do echo $fd ; done
+/proc/1/fd/0
+/proc/1/fd/1
+/proc/1/fd/2
+/proc/1/fd/255
+/proc/1/fd/3
+This way you can see the file descriptors any pid is using. If you want to see what is last command ran on the system without cat or see the content of the file with cat
+read $(</proc/${PID}/cmdline)
+So using read , for and other internal commands you can use to find out what is going on in the system.
+Trick Question: How do you delete a file named -f or --file ?
+Answer: Well explained here. Though the interviewer expects you to walk him/her through the command execution process on the linux system
+Question: Explain the output below and what command produces this?
+￼
+Question: Name the fields and what they represents ?
+Question: Looking at the below output, please explain what is going on in the machine ? Please be as detail and descriptive as possible
+￼
+￼
+Question: Compare above 2 vmstat outputs ? and explain the similarities and differences ?
+Question: What do you understand from below vmstat output and what is the relationship between in and cs column ?
+￼
+Trick Question: Looking at vmstat can you tell how many CPU and Cores the system has ?
+Question: How to find the config and other related files if only the process is known ?
+Answer: check lsof
+Question: Given there is a TCP Connection between 2 machine? How does packets move if they are IP Datagram packets? If Yes, what would be an advantage? Faster? What about latency?
+Explanation: Good content to read about TCP and UDP
+Question: When you do curl example.com what happens?
+Explanation: I don’t have to say what happens when you do curl example.com , What I am going to suggest is that this is basically a combination of multiple questions
+* 		How does curl executes on the system? Basically, go over the whole process of command execution from user space to kernel space.
+* 		Explain the fork() and exec() calls.
+* 		Explain the well known system calls which might be involved
+* 		DNS Resolution from example.com to an IP Address
+* 		Explain the Request transmission from your terminal to the destination machine and then respond back to your terminal
+* 		If possible go into detail about the packet transmission Network layer 2–3 concepts
+Follow Up Question: The output of curl example.com is this? Please explain?
+>> curl example.com
+<HTML>
+<HEAD>
+<TITLE>Document Has Moved</TITLE>
+</HEAD>
+<BODY BGCOLOR="white" FGCOLOR="black">
+<H1>Document Has Moved</H1>
+<HR>
+<FONT FACE="Helvetica,Arial"><B>
+Description: The document you requested has moved to a new location.  The new location is "https://www.example.com/".
+</B></FONT>
+<HR>
+</BODY>
+Explanation: Talk about the Response code you have received (not visible in output) and why. What can you do to get 200 response code ?
+Explain how HTTPS works and go into detail in a 3-Way handshake. Explain the Asymmetric and Symmetric encryption in terms of SSL. Here is a nice writeup about it
+Follow Up Question: How do you tell your system to not used /etc/hosts Does file override for DNS Resolution?
+Answer: nsswitch.com read about it here
+Question: What is nscd service and why it is used ?
+Answer: Read about nscd here
+Follow Up Question: How does the Linux system know that your application or any application will use which protocol (TCP or UDP) to communicate?
+Answer: /etc/services nice write-up here on the same.
+Question: How to simulate 50% packet drop for Testing purposes?
+Explanation: Here
+Question: Talk about gRPC and why would one use it ? Pros and cons ?
+Explanation: Good Read
+Question: What are the ways to count total TCP Connections on the system ?
+Explanations: couple of commands can be used like netstat , ss and not to forget the /proc filesystem ( specifically /proc/net/sockstat file). Good examples here
+Question: How to troubleshoot Short Lived Process or Processes causing CPU Spikes ?
+Explanation: Good Readings here and here
+Hope this helps in your journey and provides more food for the thoughts
+
+
+
+
